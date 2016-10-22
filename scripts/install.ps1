@@ -25,5 +25,8 @@ $appShellFolder = [System.IO.Directory]::CreateDirectory([System.IO.Path]::Combi
 Write-Host "Done" -ForegroundColor Green
 
 Write-Host "Write Path..." -NoNewline
-SETX Path $env:Path+';'+$appFolder.FullName > void
+$path = [Environment]::GetEnvironmentVariable("Path", "User")
+if (-not $path.Contains($appFolder.FullName)) {
+[Environment]::SetEnvironmentVariable("Path", $path+';'+$appFolder.FullName, "User")
+}
 Write-Host "Done" -ForegroundColor Green
