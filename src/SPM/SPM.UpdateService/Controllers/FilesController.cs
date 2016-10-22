@@ -33,11 +33,13 @@ namespace SPM.UpdateService.Controllers
         }
 
         [HttpPost]
-        public void Post(IFormFile file)
+        [Route("upload")]
+        public void Post()
         {
-            using (var sr = new BinaryReader(file.OpenReadStream()))
+            var context = contextAccessor.HttpContext;
+            using (var sr = new BinaryReader(context.Request.Body))
             {
-                var data = sr.ReadBytes((int)sr.BaseStream.Length);
+                var data = sr.ReadBytes((int)context.Request.ContentLength);
 
                 var nextVersion = versionService.GetNextAvailableVersion();
                 versionService.AddNewVersion(nextVersion, data);

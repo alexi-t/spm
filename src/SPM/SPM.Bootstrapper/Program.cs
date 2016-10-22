@@ -40,7 +40,6 @@ namespace SPM.Bootstrapper
             domain.ExecuteAssembly(executable, args);
 
             AppDomain.Unload(domain);
-            Directory.Delete(cachePath, true);
         }
     }
 }
