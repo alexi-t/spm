@@ -8,6 +8,7 @@ using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace SPM.UpdateService.Services
 {
@@ -16,8 +17,13 @@ namespace SPM.UpdateService.Services
         string tableName = "appversions";
         string partiionName = "Versions";
 
-        string connectionString = "DefaultEndpointsProtocol=https;AccountName=spmspu;AccountKey=OQkq6rH6vVdV2BGU6LaFLpRWsdkwANrdR/hvKZ1Hmd3iVnZYMnbn6Bxxa06kADC3Iou/RKR4/nw4MbjGcY/9rw==";
+        string connectionString = string.Empty;
         
+        public VersionsService(IConfigurationRoot configuration)
+        {
+            this.connectionString = configuration["AzureStorage"];
+        }
+
         public string GetNextAvailableVersion()
         {
             TechSmith.Hyde.Table.AzureTableStorageProvider storage = GetStorage();
