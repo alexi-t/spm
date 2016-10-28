@@ -9,6 +9,8 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SPM.UpdateService.Services
 {
@@ -19,10 +21,11 @@ namespace SPM.UpdateService.Services
 
         string connectionString = string.Empty;
         
-        public VersionsService(IConfigurationRoot configuration)
+        public VersionsService(IOptions<Startup.ConnectionStrings> configuration)
         {
-            this.connectionString = configuration["AzureStorage"];
+            this.connectionString = configuration.Value.Azure;
         }
+
 
         public string GetNextAvailableVersion()
         {
@@ -62,6 +65,8 @@ namespace SPM.UpdateService.Services
                 return ms.ToArray();
             }
         }
+
+        internal string GetConnectionString() => connectionString;
 
         private TechSmith.Hyde.Table.AzureTableStorageProvider GetStorage()
         {

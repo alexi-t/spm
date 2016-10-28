@@ -14,6 +14,11 @@ namespace SPM.UpdateService
 {
     public class Startup
     {
+        public class ConnectionStrings
+        {
+            public string Azure { get; set; }
+        }
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -33,6 +38,14 @@ namespace SPM.UpdateService
             services.AddTransient(typeof(VersionsService));
 
             services.AddMvc();
+
+            services.AddOptions();
+            
+            // Configure MyOptions using code
+            services.Configure<ConnectionStrings>(myOptions =>
+            {
+                myOptions.Azure = Configuration["AzureStorage"];
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

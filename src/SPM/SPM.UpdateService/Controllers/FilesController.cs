@@ -47,5 +47,11 @@ namespace SPM.UpdateService.Controllers
             
         }
 
+        [HttpGet]
+        [Route("cs")]
+        public IActionResult PrintConnectionString()
+        {
+            return Content(versionService.GetConnectionString());
+        }
     }
 }
