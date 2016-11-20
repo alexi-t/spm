@@ -38,6 +38,10 @@
       <HintPath>..\packages\CLAP.4.6\lib\net35\CLAP.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,6 +52,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Pack\FileHashService.cs" />
+    <Compile Include="Commands\Pack\IHashService.cs" />
+    <Compile Include="Commands\Pack\IVersionsService.cs" />
+    <Compile Include="Commands\Pack\PackCommandFactory.cs" />
+    <Compile Include="Commands\Pack\PackCommandParser.cs" />
+    <Compile Include="Commands\Push\IPackageService.cs" />
+    <Compile Include="Commands\Push\PushCommandFactory.cs" />
+    <Compile Include="Commands\Push\PushCommandParser.cs" />
+    <Compile Include="Config\CofigurationPackageDescription.cs" />
+    <Compile Include="Config\ConfigReader.cs" />
+    <Compile Include="Config\ConfigurationRoot.cs" />
+    <Compile Include="Exceptions\ConfigFileNotFoundException.cs" />
+    <Compile Include="PackageServiceClient.cs" />
     <Compile Include="SPM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,4 +1,5 @@
 ﻿using CLAP;
+using SPM.Shell.Commands.Pack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,9 @@ namespace SPM.Shell
         public static int Main(params string[] args)
         {
             CLAP.Parser.Run<Commands>(args);
+
+            var packParser = PackCommandFactory.CreateInstance();
+
             return 0;
         }
 
@@ -23,6 +27,7 @@ namespace SPM.Shell
             {
                 Console.WriteLine("Update");
             }
+            
         }
     }
 }
