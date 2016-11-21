@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TechSmith.Hyde;
@@ -33,6 +36,27 @@ namespace SPM.PackageService.Storage
             if (packageVersions.Any())
                 return packageVersions.First().Version;
             return "0.0.0.0";
+        }
+
+        internal async Task AddVersion(string packageName, string version, string fileUrl)
+        {
+            var storage = GetStorage();
+
+            storage.Add(PackagesVersionsTableName, new PackageVersion(packageName, version, fileUrl));
+            await storage.SaveAsync();
+        }
+
+        public async Task<string> AddFile(string packageName, string version, Stream file)
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+            var container = blobClient.GetContainerReference(packageName);
+            await container.CreateIfNotExistsAsync();
+            var blob = container.GetBlockBlobReference(packageName + "-" + version);
+            await blob.UploadFromStreamAsync(file);
+
+            return blob.Uri.ToString();
         }
     }
 }

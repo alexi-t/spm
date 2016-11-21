@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SPM.PackageService.Storage;
+using Microsoft.AspNetCore.Http;
 
 namespace SPM.PackageService.Controllers
 {
@@ -25,6 +26,11 @@ namespace SPM.PackageService.Controllers
             return new Version(version.Major, version.Minor, version.Build + 1, 0).ToString();
         }
 
-
+        [Route("Push")]
+        public async Task Push([FromQuery] string packageName, [FromQuery] string version, IFormFile packageData)
+        {
+            var fileUrl = await packagesService.AddFile(packageName, version, packageData.OpenReadStream());
+            await packagesService.AddVersion(packageName, version, fileUrl);
+        }
     }
 }

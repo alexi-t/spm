@@ -8,11 +8,20 @@ namespace SPM.PackageService.Storage
 {
     public class PackageVersion
     {
+        public PackageVersion(string name, string version, string fileUrl)
+        {
+            PackageName = name;
+            RowKey = (DateTime.MaxValue.Ticks - DateTime.Now.Ticks).ToString();
+            Version = version;
+            FileUrl = fileUrl;
+        }
+
         [PartitionKey]
         public string PackageName { get; set; }
         [RowKey]
+        public string RowKey { get; set; }
         public string Version { get; set; }
 
-        public string FileID { get; set; }
+        public string FileUrl { get; set; }
     }
 }
