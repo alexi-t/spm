@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Init\InitCommandParser.cs" />
     <Compile Include="Commands\Pack\FileHashService.cs" />
     <Compile Include="Commands\Pack\IHashService.cs" />
     <Compile Include="Commands\Pack\IVersionsService.cs" />

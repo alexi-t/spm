@@ -9,7 +9,13 @@ namespace SPM.Shell.Config
 {
     public class ConfigurationRoot
     {
+        public ConfigurationRoot() { }
+        public ConfigurationRoot(List<CofigurationPackageDescription> packages)
+        {
+            this.Packages = packages.ToDictionary(d => d.Name);
+        }
+
         [JsonProperty("packages")]
-        public Dictionary<string, CofigurationPackageDescription> Packages { get; }
+        public Dictionary<string, CofigurationPackageDescription> Packages { get; private set; }
     }
 }

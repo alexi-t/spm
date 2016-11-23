@@ -25,7 +25,23 @@ namespace SPM.Shell.Config
 
         internal static void UpdatePackageConfig(string packageName, CofigurationPackageDescription packageConfig)
         {
-            throw new NotImplementedException();
+            var config = ReadFromWorkingDirectory();
+
+            if (config.Packages.ContainsKey(packageName))
+                config.Packages[packageName] = packageConfig;
+
+            var configJson = JsonConvert.SerializeObject(config);
+
+            File.WriteAllText(ConfigFileName, configJson);
+        }
+
+        internal static void CreateConfigFile(List<CofigurationPackageDescription> configList)
+        {
+            var root = new ConfigurationRoot(configList);
+
+            var configJson = JsonConvert.SerializeObject(root);
+
+            File.WriteAllText(ConfigFileName, configJson);
         }
     }
 }
