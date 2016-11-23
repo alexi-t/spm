@@ -8,6 +8,8 @@ namespace SPM.PackageService.Storage
 {
     public class PackageVersion
     {
+        public PackageVersion() { }
+
         public PackageVersion(string name, string version, string fileUrl)
         {
             PackageName = name;

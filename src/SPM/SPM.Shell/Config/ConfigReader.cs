@@ -39,7 +39,7 @@ namespace SPM.Shell.Config
         {
             var root = new ConfigurationRoot(configList);
 
-            var configJson = JsonConvert.SerializeObject(root);
+            var configJson = JsonConvert.SerializeObject(root, Formatting.Indented);
 
             File.WriteAllText(ConfigFileName, configJson);
         }

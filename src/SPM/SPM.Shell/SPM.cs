@@ -1,5 +1,7 @@
 ﻿using CLAP;
+using SPM.Shell.Commands.Init;
 using SPM.Shell.Commands.Pack;
+using SPM.Shell.Commands.Push;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +15,27 @@ namespace SPM.Shell
 
         public static int Main(params string[] args)
         {
-            CLAP.Parser.Run<Commands>(args);
+            int result = -1;
 
-            var packParser = PackCommandFactory.CreateInstance();
+
+            var parsers = new object[] {
+                new InitCommandParser(),
+                PackCommandFactory.CreateInstance(),
+                PushCommandFactory.CreateInstance()
+            };
+
+            int index = 0;
+            while (result != 0)
+            {
+                try
+                {
+                    result = Parser.Run(args, parsers[index++]);
+                }
+                catch (VerbNotFoundException)
+                {
+                    continue;
+                }
+            }
 
             return 0;
         }
@@ -27,7 +47,7 @@ namespace SPM.Shell
             {
                 Console.WriteLine("Update");
             }
-            
+
         }
     }
 }

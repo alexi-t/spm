@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 
 namespace SPM.Shell.Commands.Init
 {
+
     public class InitCommandParser
     {
-        [Verb()]
+        [Verb(Aliases = "init")]
         public void Init()
         {
             var wspFiles = Directory.GetFiles(".", "*.wsp");
@@ -34,7 +35,7 @@ namespace SPM.Shell.Commands.Init
                 configList.Add(desc);
             }
 
-            ConfigManager.CreateConfigFile(configList);
+            ConfigManager.CreateConfigFile(configList);            
         }
     }
 }
