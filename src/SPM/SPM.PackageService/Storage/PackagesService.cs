@@ -29,13 +29,13 @@ namespace SPM.PackageService.Storage
             return storage;
         }
 
-        public async Task<string> GetLastPackageVersion(string packageName)
+        public async Task<PackageVersion> GetLastPackageVersion(string packageName)
         {
             var storage = GetStorage();
-            var packageVersions = await storage.CreateQuery<PackageVersion>(PackagesTableName).PartitionKeyEquals(packageName).Top(1).Async();
+            var packageVersions = await storage.CreateQuery<PackageVersion>(PackagesVersionsTableName).PartitionKeyEquals(packageName).Top(1).Async();
             if (packageVersions.Any())
-                return packageVersions.First().Version;
-            return "0.0.0.0";
+                return packageVersions.First();
+            return null;
         }
 
         internal async Task AddVersion(string packageName, string version, string fileUrl)
@@ -43,6 +43,16 @@ namespace SPM.PackageService.Storage
             var storage = GetStorage();
 
             storage.Add(PackagesVersionsTableName, new PackageVersion(packageName, version, fileUrl));
+
+            var package = await storage.GetAsync<Package>(PackagesTableName, "Packages", packageName);
+
+            if (package == null)
+                package = new Package(packageName);
+
+            package.LastVersion = version;
+
+            storage.Upsert(PackagesTableName, package);
+
             await storage.SaveAsync();
         }
 

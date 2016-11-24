@@ -18,19 +18,33 @@ namespace SPM.PackageService.Controllers
             this.packagesService = service;
         }
 
+        [HttpGet]
         [Route("GetNextVersion")]
         public async Task<string> GetNextVersion([FromQuery]string name)
         {
             var lastVersion = await packagesService.GetLastPackageVersion(name);
-            var version = new Version(lastVersion);
+            var version = new Version(lastVersion?.Version ?? "0.0.0.0");
             return new Version(version.Major, version.Minor, version.Build + 1, 0).ToString();
         }
 
+        [HttpPost]
         [Route("Push")]
-        public async Task Push([FromQuery] string packageName, [FromQuery] string version, IFormFile packageData)
+        public async Task<IActionResult> Push([FromQuery] string packageName, [FromQuery] string version, IFormFile packageData)
         {
+            if (string.IsNullOrEmpty(packageName))
+                return BadRequest();
+
             var fileUrl = await packagesService.AddFile(packageName, version, packageData.OpenReadStream());
             await packagesService.AddVersion(packageName, version, fileUrl);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("GetLastVersion")]
+        public async Task<IActionResult> GetLastVersion([FromQuery] string packageName)
+        {
+            return Json(await packagesService.GetLastPackageVersion(packageName));
         }
     }
 }
