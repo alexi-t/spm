@@ -7,6 +7,6 @@ namespace SPM.Shell.Commands.Push
     public interface IPackageService
     {
         Task<bool> GetCanPushPackageAsync(string packageName, CofigurationPackageDescription packageConfig);
-        Task Push(string packageName, CofigurationPackageDescription packageConfig, FileStream packageFile);
+        Task Push(string wspFileName, CofigurationPackageDescription packageConfig, FileStream packageFile);
     }
 }

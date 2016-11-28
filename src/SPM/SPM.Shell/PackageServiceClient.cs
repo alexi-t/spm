@@ -33,12 +33,12 @@ namespace SPM.Shell
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task Push(string packageName, CofigurationPackageDescription packageConfig, FileStream packageFile)
+        public async Task Push(string wspFileName, CofigurationPackageDescription packageConfig, FileStream packageFile)
         {
             var httpClient = new HttpClient();
             var content = new MultipartFormDataContent();
-            content.Add(new StreamContent(packageFile), "packageData", packageName);
-            var response = await httpClient.PostAsync(serviceUrl + $"/Push?packageName={packageName}&version={packageConfig.Version}", content);
+            content.Add(new StreamContent(packageFile), "packageData", wspFileName);
+            var response = await httpClient.PostAsync(serviceUrl + $"/Push?packageName={packageConfig.Name}&version={packageConfig.Version}", content);
             if (!response.IsSuccessStatusCode)
                 throw new ApplicationException("Error push package");
         }

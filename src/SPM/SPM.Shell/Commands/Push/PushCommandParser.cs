@@ -25,15 +25,15 @@ namespace SPM.Shell.Commands.Push
 
             foreach (var package in config.Packages)
             {
-                var packageName = package.Key;
+                var wspFileName = package.Key;
                 var packageConfig = package.Value;
 
-                using (var packageFile = File.OpenRead(packageName))
+                using (var packageFile = File.OpenRead(wspFileName))
                 {
-                    bool canPushPackage = await packageService.GetCanPushPackageAsync(packageName, packageConfig);
+                    bool canPushPackage = await packageService.GetCanPushPackageAsync(wspFileName, packageConfig);
                     if (canPushPackage)
                     {
-                        await packageService.Push(packageName, packageConfig, packageFile);
+                        await packageService.Push(wspFileName, packageConfig, packageFile);
                     }
                 }
             }
