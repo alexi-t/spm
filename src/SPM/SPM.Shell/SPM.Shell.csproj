@@ -53,6 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Init\InitCommandParser.cs" />
+    <Compile Include="Commands\Install\InstallCommandParser.cs" />
+    <Compile Include="Commands\Install\IPackageService.cs" />
+    <Compile Include="Commands\Install\PackageDescription.cs" />
     <Compile Include="Commands\Pack\FileHashService.cs" />
     <Compile Include="Commands\Pack\IHashService.cs" />
     <Compile Include="Commands\Pack\IVersionsService.cs" />

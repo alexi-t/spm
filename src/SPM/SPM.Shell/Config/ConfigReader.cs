@@ -29,6 +29,8 @@ namespace SPM.Shell.Config
 
             if (config.Packages.ContainsKey(packageName))
                 config.Packages[packageName] = packageConfig;
+            else
+                config.Packages.Add(packageName, packageConfig);
 
             var configJson = JsonConvert.SerializeObject(config);
 
