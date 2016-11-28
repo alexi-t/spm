@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SPM.Shell.Commands.Pull
+namespace SPM.Shell.Commands.Upgrade
 {
     public class PullCommandParser
     {
@@ -20,7 +20,7 @@ namespace SPM.Shell.Commands.Pull
         }
 
         [Verb()]
-        public async void Pull()
+        public async void Upgrade()
         {
             var config = ConfigManager.ReadFromWorkingDirectory();
 

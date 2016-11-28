@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SPM.Shell.Commands.Pull
+namespace SPM.Shell.Commands.Upgrade
 {
     public interface IPullService
     {

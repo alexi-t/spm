@@ -58,9 +58,9 @@
     <Compile Include="Commands\Pack\IVersionsService.cs" />
     <Compile Include="Commands\Pack\PackCommandFactory.cs" />
     <Compile Include="Commands\Pack\PackCommandParser.cs" />
-    <Compile Include="Commands\Pull\IPullService.cs" />
-    <Compile Include="Commands\Pull\NewPackagePack.cs" />
-    <Compile Include="Commands\Pull\PullCommandParser.cs" />
+    <Compile Include="Commands\Upgrade\IPullService.cs" />
+    <Compile Include="Commands\Upgrade\NewPackagePack.cs" />
+    <Compile Include="Commands\Upgrade\UpgradeCommandParser.cs" />
     <Compile Include="Commands\Push\IPackageService.cs" />
     <Compile Include="Commands\Push\PushCommandFactory.cs" />
     <Compile Include="Commands\Push\PushCommandParser.cs" />
