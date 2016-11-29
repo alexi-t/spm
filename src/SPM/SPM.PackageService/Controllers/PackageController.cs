@@ -35,7 +35,7 @@ namespace SPM.PackageService.Controllers
                 return BadRequest();
 
             var fileUrl = await packagesService.AddFile(packageName, version, packageData.OpenReadStream());
-            await packagesService.AddVersion(packageName, version, fileUrl);
+            await packagesService.AddVersion(packageName, version, fileUrl, packageData.FileName);
 
             return Ok();
         }

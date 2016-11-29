@@ -22,5 +22,7 @@ namespace SPM.PackageService.Storage
         public string Name { get; set; }
 
         public string LastVersion { get; set; }
+
+        public string WspName { get; set; }
     }
 }

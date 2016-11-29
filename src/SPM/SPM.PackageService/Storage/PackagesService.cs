@@ -38,7 +38,7 @@ namespace SPM.PackageService.Storage
             return null;
         }
 
-        internal async Task AddVersion(string packageName, string version, string fileUrl)
+        internal async Task AddVersion(string packageName, string version, string fileUrl, string wspName)
         {
             var storage = GetStorage();
 
@@ -50,6 +50,7 @@ namespace SPM.PackageService.Storage
                 package = new Package(packageName);
 
             package.LastVersion = version;
+            package.WspName = wspName;
 
             storage.Upsert(PackagesTableName, package);
 
