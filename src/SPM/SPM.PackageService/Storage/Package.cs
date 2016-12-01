@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TechSmith.Hyde.Common.DataAnnotations;
 
@@ -12,10 +13,13 @@ namespace SPM.PackageService.Storage
 
         public Package(string name)
         {
-            Partition = "Packages";
+            Partition = PACKAGES_PARTITION_NAME;
             Name = name;
         }
 
+        public const string PACKAGES_PARTITION_NAME = "Packages";
+
+        [IgnoreDataMember]
         [PartitionKey]
         public string Partition { get; set; }
         [RowKey]

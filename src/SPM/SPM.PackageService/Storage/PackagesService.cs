@@ -57,6 +57,28 @@ namespace SPM.PackageService.Storage
             await storage.SaveAsync();
         }
 
+        internal async Task<Package> GetPackage(string packageName)
+        {
+            var storage = GetStorage();
+
+            return await storage.GetAsync(PackagesTableName, Package.PACKAGES_PARTITION_NAME, packageName);
+        }
+
+        internal async Task<string> GetPackageVersionDowloadLink(string packageName, string version)
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+            var container = blobClient.GetContainerReference(packageName);
+            await container.CreateIfNotExistsAsync();
+            var blob = container.GetBlockBlobReference(packageName + "-" + version);
+            if (await blob.ExistsAsync())
+            {
+                return blob.Uri.ToString();
+            }
+            return string.Empty;
+        }
+
         public async Task<string> AddFile(string packageName, string version, Stream file)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);

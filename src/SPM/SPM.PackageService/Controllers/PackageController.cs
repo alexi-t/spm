@@ -46,5 +46,27 @@ namespace SPM.PackageService.Controllers
         {
             return Json(await packagesService.GetLastPackageVersion(packageName));
         }
+
+        [HttpGet]
+        [Route("Get")]
+        public async Task<IActionResult> GetPackage([FromQuery]string packageName)
+        {
+            Package package = await packagesService.GetPackage(packageName);
+            if (package != null)
+                return Json(package);
+            else
+                return NotFound();
+        }
+
+        [HttpGet]
+        [Route("GetDownloadLink")]
+        public async Task<IActionResult> GetDownloadLink([FromQuery] string packageName, [FromQuery] string version)
+        {
+            var link = await packagesService.GetPackageVersionDowloadLink(packageName, version);
+            if (!string.IsNullOrEmpty(link))
+                return Content(link);
+            else
+                return NotFound();
+        }
     }
 }

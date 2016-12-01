@@ -20,6 +20,13 @@ namespace SPM.Shell
             this.serviceUrl = serviceUrl;
         }
 
+        public async Task<byte[]> DownloadPackageVersion(string packageName, string version)
+        {
+            var httpClient = new HttpClient();
+            var downloadLink = await httpClient.GetStringAsync(serviceUrl + $"/GetDownloadLink?packageName={packageName}&version={version}");
+            return await httpClient.GetByteArrayAsync(downloadLink);
+        }
+
         public async Task<bool> GetCanPushPackageAsync(string packageName, CofigurationPackageDescription packageConfig)
         {
             var httpClient = new HttpClient();
@@ -38,7 +45,7 @@ namespace SPM.Shell
         public async Task<PackageDescription> GetPackageAsync(string packageName)
         {
             var httpClient = new HttpClient();
-            var packageResponse = await httpClient.GetAsync(serviceUrl + "/GetPackage?packageName=" + packageName);
+            var packageResponse = await httpClient.GetAsync(serviceUrl + "/Get?packageName=" + packageName);
             if (packageResponse.IsSuccessStatusCode)
             {
                 var descriptionJson = await packageResponse.Content.ReadAsStringAsync();
