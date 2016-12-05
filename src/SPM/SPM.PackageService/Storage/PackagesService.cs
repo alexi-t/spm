@@ -44,11 +44,17 @@ namespace SPM.PackageService.Storage
 
             storage.Add(PackagesVersionsTableName, new PackageVersion(packageName, version, fileUrl));
 
-            var package = await storage.GetAsync<Package>(PackagesTableName, "Packages", packageName);
+            Package package = null;
 
-            if (package == null)
+            try
+            {
+                package = await storage.GetAsync<Package>(PackagesTableName, "Packages", packageName);
+            }
+            catch (TechSmith.Hyde.Common.EntityDoesNotExistException)
+            {
                 package = new Package(packageName);
-
+            }
+                
             package.LastVersion = version;
             package.WspName = wspName;
 
@@ -61,7 +67,7 @@ namespace SPM.PackageService.Storage
         {
             var storage = GetStorage();
 
-            return await storage.GetAsync(PackagesTableName, Package.PACKAGES_PARTITION_NAME, packageName);
+            return await storage.GetAsync<Package>(PackagesTableName, Package.PACKAGES_PARTITION_NAME, packageName);
         }
 
         internal async Task<string> GetPackageVersionDowloadLink(string packageName, string version)

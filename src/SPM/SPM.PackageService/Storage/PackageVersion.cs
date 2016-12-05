@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using TechSmith.Hyde.Common.DataAnnotations;
 
@@ -21,6 +22,7 @@ namespace SPM.PackageService.Storage
         [PartitionKey]
         public string PackageName { get; set; }
         [RowKey]
+        [IgnoreDataMember]
         public string RowKey { get; set; }
         public string Version { get; set; }
 
