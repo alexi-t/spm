@@ -13,23 +13,29 @@ namespace SPM.Http.PackageService.Service
 
         public FileService(string serviceUrl)
         {
-            this.httpClient = new HttpClient();
-            this.httpClient.BaseAddress = new Uri(serviceUrl);
+            this.httpClient = new HttpClient()
+            {
+                BaseAddress = new Uri(serviceUrl)
+            };
         }
 
-        public async Task<bool> UploadFileAsync(string packageNameAndTag, byte[] bytes)
+        public async Task<string> UploadFileAsync(string packageNameAndTag, byte[] bytes)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, httpClient.BaseAddress);
 
-            var content = new MultipartFormDataContent();
-            content.Add(new ByteArrayContent(bytes), "data");
-            content.Add(new StringContent(packageNameAndTag), "key");
-
+            var content = new MultipartFormDataContent
+            {
+                { new ByteArrayContent(bytes), "data" },
+                { new StringContent(packageNameAndTag), "key" }
+            };
             request.Content = content;
 
             var response = await httpClient.SendAsync(request);
 
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadAsStringAsync();
+
+            return string.Empty;
         }
     }
 }

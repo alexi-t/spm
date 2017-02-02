@@ -8,6 +8,7 @@ namespace SPM.Http.PackageService.Model
 {
     public class Package
     {
+        public string Hash { get; internal set; }
         [PartitionKey]
         public string Name { get; set; }
         [RowKey]

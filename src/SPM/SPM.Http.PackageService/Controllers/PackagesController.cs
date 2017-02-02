@@ -19,8 +19,7 @@ namespace SPM.Http.PackageService.Controllers
             this.packageService = packageService;
             this.fileService = fileService;
         }
-
-        // GET api/values
+        
         [HttpGet("getAll")]
         public async Task<IActionResult> GetAllTagsAsync([FromQuery]string name, [FromQuery]int count = 10)
         {
@@ -34,8 +33,7 @@ namespace SPM.Http.PackageService.Controllers
 
             return Ok(tags.Select(t => $"{name}@{t}"));
         }
-
-        // GET api/values/5
+        
         [HttpGet("get")]
         public async Task<IActionResult> GetAsync([FromQuery]string name)
         {
@@ -75,11 +73,11 @@ namespace SPM.Http.PackageService.Controllers
                 await stream.ReadAsync(packageData, 0, (int)packageFile.Length);
             }
 
-            var uploadSuccess = await fileService.UploadFileAsync($"{name}@{tag}", packageData);
+            var fileHash = await fileService.UploadFileAsync($"{name}@{tag}", packageData);
 
-            if (uploadSuccess)
+            if (!string.IsNullOrEmpty(fileHash))
             {
-                return Ok(await packageService.AddPackageAsync(name, tag));
+                return Ok(await packageService.AddPackageAsync(name, tag, fileHash));
             }
             return BadRequest();
         }
