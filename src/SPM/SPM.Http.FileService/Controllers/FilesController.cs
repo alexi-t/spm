@@ -24,25 +24,32 @@ namespace SPM.Http.FileService.Controllers
             dataStream.Read(dataBytes, 0, (int)data.Length);
 
             var dataHash = hash.ComputeHash(dataBytes);
+            
+            System.IO.File.WriteAllBytes(key, dataBytes);
 
-            var fileName = string.Join("", keyHash.Select(b => b.ToString("x2")));
-
-            System.IO.File.WriteAllBytes(fileName, dataBytes);
-
-            return Ok(string.Join("", dataHash.Select(b => b.ToString("X2"))));
+            return Ok(string.Join("", GetBytesHash(hash, dataBytes)));
         }
 
-        [HttpGet("{key}")]
-        public IActionResult Get(string key)
+        [HttpGet("{key}/{fileHash}")]
+        public IActionResult Get(string key, string fileHash)
         {
-            var hash = SHA256.Create();
-            var keyHash = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
-            var fileName = string.Join("", keyHash.Select(b => b.ToString("x2")));
+            if (System.IO.File.Exists(key))
+            {
+                var hashAlgorithm = SHA256.Create();
+                var fileData = System.IO.File.ReadAllBytes(key);
+                var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
 
-            if (System.IO.File.Exists(fileName))
-                return File(System.IO.File.ReadAllBytes(fileName), "application/octet-stream");
+                if (fileDataHash == fileHash)
+                    return File(fileData, "application/octet-stream");
 
+                return NotFound();
+            }
             return NotFound();
+        }
+
+        private string GetBytesHash(HashAlgorithm algorithm, byte[] buffer)
+        {
+            return string.Join("", algorithm.ComputeHash(buffer).Select(b => b.ToString("X2")));
         }
     }
 }
