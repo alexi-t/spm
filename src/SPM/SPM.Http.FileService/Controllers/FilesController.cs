@@ -13,8 +13,15 @@ namespace SPM.Http.FileService.Controllers
     [Route("[controller]")]
     public class FilesController : Controller
     {
+        private readonly Services.CloudBlobService cloudStorage;
+
+        public FilesController(Services.CloudBlobService cloudStorage)
+        {
+            this.cloudStorage = cloudStorage;
+        }
+
         [HttpPost]
-        public IActionResult Post([FromForm]string key, IFormFile data)
+        public async Task<IActionResult> PostAsync([FromForm]string key, IFormFile data)
         {
             var hash = SHA256.Create();
             var keyHash = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
@@ -24,19 +31,20 @@ namespace SPM.Http.FileService.Controllers
             dataStream.Read(dataBytes, 0, (int)data.Length);
 
             var dataHash = hash.ComputeHash(dataBytes);
-            
-            System.IO.File.WriteAllBytes(key, dataBytes);
+
+            await cloudStorage.SaveFileAsync(key, dataBytes);
 
             return Ok(string.Join("", GetBytesHash(hash, dataBytes)));
         }
 
         [HttpGet("{key}/{fileHash}")]
-        public IActionResult Get(string key, string fileHash)
+        public async Task<IActionResult> GetAsync(string key, string fileHash)
         {
             if (System.IO.File.Exists(key))
             {
+                var fileData = await cloudStorage.GetFileAsync(key);
+
                 var hashAlgorithm = SHA256.Create();
-                var fileData = System.IO.File.ReadAllBytes(key);
                 var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
 
                 if (fileDataHash == fileHash)

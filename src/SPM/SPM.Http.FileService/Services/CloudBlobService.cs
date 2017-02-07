@@ -26,7 +26,7 @@ namespace SPM.Http.FileService.Services
             return string.Join("", algorithm.ComputeHash(Encoding.UTF8.GetBytes(str)).Select(b => b.ToString("x2")));
         }
 
-        public async Task SaveFile(string key, byte[] data)
+        public async Task SaveFileAsync(string key, byte[] data)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
@@ -40,7 +40,7 @@ namespace SPM.Http.FileService.Services
             await blockBlob.UploadFromByteArrayAsync(data, 0, data.Length);
         }
 
-        public async Task<byte[]> GetFile(string key)
+        public async Task<byte[]> GetFileAsync(string key)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();

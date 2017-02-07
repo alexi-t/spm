@@ -1,6 +1,6 @@
 ﻿namespace SPM.Shell.Commands.Install
 {
-    internal class PackageDescription
+    public class PackageDescription
     {
         public string FileUrl { get; internal set; }
         public string Version { get; internal set; }
