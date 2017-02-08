@@ -255,4 +255,7 @@ paket-files/
 /build/bootstrapper/spm.vshost.exe.config
 /build/bootstrapper/spm.vshost.exe
 /build/bootstrapper/SPM.Bootstrapper.vshost.exe.manifest
+
+#SPM debug files
+*.debug.json
 /build/bootstrapper
