@@ -28,9 +28,7 @@ namespace SPM.Shell.Commands.Install
             {
                 var config = ConfigManager.ReadFromWorkingDirectory();
 
-                var httpClient = new HttpClient();
-
-                var wspFileData = await httpClient.GetByteArrayAsync(package.FileUrl);
+                byte[] wspFileData = await packageService.DownloadPackageVersion(package.Name, package.LastVersion);
 
                 File.WriteAllBytes(package.WspName, wspFileData);
 
@@ -38,7 +36,7 @@ namespace SPM.Shell.Commands.Install
                 {
                     Name = packageName,
                     Hash = "",
-                    Version = package.Version
+                    Version = package.LastVersion
                 });
             }
         }

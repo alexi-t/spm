@@ -258,3 +258,4 @@ paket-files/
 
 #SPM debug files
 *.debug.json
+/build/bootstrapper

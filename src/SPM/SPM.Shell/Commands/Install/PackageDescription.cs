@@ -2,8 +2,8 @@
 {
     public class PackageDescription
     {
-        public string FileUrl { get; internal set; }
-        public string Version { get; internal set; }
+        public string Name { get; internal set; }
+        public string LastVersion { get; internal set; }
         public string WspName { get; internal set; }
     }
 }

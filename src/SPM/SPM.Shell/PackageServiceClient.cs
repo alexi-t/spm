@@ -5,17 +5,26 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using SPM.Shell.Commands.Install;
 using SPM.Shell.Config;
+using Newtonsoft.Json;
 
 namespace SPM.Shell
 {
-    public class PackageServiceClient : Commands.Pack.IVersionsService, Commands.Push.IPackageService
+    public class PackageServiceClient : Commands.Pack.IVersionsService, Commands.Push.IPackageService, Commands.Install.IPackageService
     {
         private readonly string serviceUrl;
 
         public PackageServiceClient(string serviceUrl)
         {
             this.serviceUrl = serviceUrl;
+        }
+
+        public async Task<byte[]> DownloadPackageVersion(string packageName, string version)
+        {
+            var httpClient = new HttpClient();
+            var downloadLink = await httpClient.GetStringAsync(serviceUrl + $"/GetDownloadLink?packageName={packageName}&version={version}");
+            return await httpClient.GetByteArrayAsync(downloadLink);
         }
 
         public async Task<bool> GetCanPushPackageAsync(string packageName, CofigurationPackageDescription packageConfig)
@@ -31,6 +40,22 @@ namespace SPM.Shell
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(serviceUrl + "/GetNextVersion?packageName=" + name);
             return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<PackageDescription> GetPackageAsync(string packageName)
+        {
+            var httpClient = new HttpClient();
+            var packageResponse = await httpClient.GetAsync(serviceUrl + "/Get?packageName=" + packageName);
+            if (packageResponse.IsSuccessStatusCode)
+            {
+                var descriptionJson = await packageResponse.Content.ReadAsStringAsync();
+                var description = JsonConvert.DeserializeObject<PackageDescription>(descriptionJson);
+                return description;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public async Task Push(string wspFileName, CofigurationPackageDescription packageConfig, FileStream packageFile)
