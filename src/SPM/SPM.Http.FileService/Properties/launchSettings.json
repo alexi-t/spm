@@ -17,10 +17,9 @@
     },
     "SPM.Http.FileService": {
       "commandName": "Project",
-      "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "debug"
       },
       "applicationUrl": "http://localhost:54052"
     }
