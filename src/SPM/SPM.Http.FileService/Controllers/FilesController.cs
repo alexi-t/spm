@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
+using Microsoft.WindowsAzure.Storage;
 
 namespace SPM.Http.FileService.Controllers
 {
@@ -40,18 +41,23 @@ namespace SPM.Http.FileService.Controllers
         [HttpGet("{key}/{fileHash}")]
         public async Task<IActionResult> GetAsync(string key, string fileHash)
         {
-            if (System.IO.File.Exists(key))
+            byte[] fileData = null;
+
+            try
             {
-                var fileData = await cloudStorage.GetFileAsync(key);
-
-                var hashAlgorithm = SHA256.Create();
-                var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
-
-                if (fileDataHash == fileHash)
-                    return File(fileData, "application/octet-stream");
-
+                fileData = await cloudStorage.GetFileAsync(key);
+            }
+            catch (StorageException)
+            {
                 return NotFound();
             }
+
+            var hashAlgorithm = SHA256.Create();
+            var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
+
+            if (fileDataHash == fileHash)
+                return File(fileData, "application/octet-stream");
+
             return NotFound();
         }
 

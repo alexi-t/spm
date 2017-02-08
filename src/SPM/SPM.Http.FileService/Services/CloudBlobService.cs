@@ -39,7 +39,7 @@ namespace SPM.Http.FileService.Services
 
             await blockBlob.UploadFromByteArrayAsync(data, 0, data.Length);
         }
-
+        
         public async Task<byte[]> GetFileAsync(string key)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
