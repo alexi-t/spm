@@ -24,6 +24,12 @@ namespace SPM.Http.FileService.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromForm]string key, IFormFile data)
         {
+            if (string.IsNullOrEmpty(key))
+                return BadRequest("Key is empty");
+
+            if (data == null)
+                return BadRequest("Data is empty");
+
             var hash = SHA256.Create();
             var keyHash = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
             var dataStream = data.OpenReadStream();
@@ -41,6 +47,12 @@ namespace SPM.Http.FileService.Controllers
         [HttpGet("{key}/{fileHash}")]
         public async Task<IActionResult> GetAsync(string key, string fileHash)
         {
+            if (string.IsNullOrEmpty(key))
+                return BadRequest("Key is empty");
+
+            if (string.IsNullOrEmpty(fileHash))
+                return BadRequest("Hash is empty");
+
             byte[] fileData = null;
 
             try

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SPM.Http.PackageService.Service;
 
 namespace SPM.Http.PackageService
 {
@@ -27,6 +28,9 @@ namespace SPM.Http.PackageService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient(p=>new FileService(Configuration["FileService"]));
+            services.AddTransient(p => new Service.PackageService(Configuration["StorageConnectionString"]));
+
             // Add framework services.
             services.AddMvc();
         }

@@ -25,7 +25,7 @@ namespace SPM.Http.PackageService.Service
 
             var content = new MultipartFormDataContent
             {
-                { new ByteArrayContent(bytes), "data" },
+                { new ByteArrayContent(bytes), "data", "package.wsp" },
                 { new StringContent(packageNameAndTag), "key" }
             };
             request.Content = content;
@@ -36,6 +36,11 @@ namespace SPM.Http.PackageService.Service
                 return await response.Content.ReadAsStringAsync();
 
             return string.Empty;
+        }
+
+        internal string GetDowloadLinkFormat()
+        {
+            return $"{httpClient.BaseAddress}/{{0}}/{{1}}";
         }
     }
 }
