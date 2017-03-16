@@ -52,6 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\BaseCommand.cs" />
+    <Compile Include="Commands\CommandArgument.cs" />
+    <Compile Include="Commands\CommandInput.cs" />
+    <Compile Include="Commands\Init\InitCommand.cs" />
     <Compile Include="Commands\Init\InitCommandParser.cs" />
     <Compile Include="Commands\Install\InstallCommandParser.cs" />
     <Compile Include="Commands\Install\IPackageService.cs" />
