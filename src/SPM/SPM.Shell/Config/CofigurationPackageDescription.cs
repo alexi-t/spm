@@ -13,9 +13,7 @@ namespace SPM.Shell.Config
         public string Name { get; set; }
         [JsonProperty("fileName")]
         public string FileName { get; set; }
-        [JsonProperty("version")]
-        public string Version { get; set; }
-        [JsonProperty("hash")]
-        public string Hash { get; set; }
+        [JsonProperty("tag")]
+        public string Tag { get; set; }
     }
 }

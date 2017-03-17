@@ -1,4 +1,5 @@
 ﻿using SPM.Shell.Config;
+using SPM.Shell.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,9 +11,11 @@ namespace SPM.Shell.Commands.Init
 {
     public class InitCommand : BaseCommand
     {
-        public InitCommand() : base("init")
-        {
+        private readonly ConfigService configService;
 
+        public InitCommand(ConfigService configService) : base("init")
+        {
+            this.configService = configService;
         }
 
         protected override CommandArgument[] GetSupportedArgs()
@@ -29,9 +32,14 @@ namespace SPM.Shell.Commands.Init
 
         protected override void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments)
         {
+            var configExist = configService.IsConfigExist();
+
+            if (configExist && !parsedArguments.Keys.Any(a => a.Alias == "o"))
+                throw new InvalidOperationException("Config already exist, use --overwrite switch to create new");
+            
             var wspFiles = Directory.GetFiles(".", "*.wsp");
 
-            var configList = new List<CofigurationPackageDescription>();
+            var packagesConfigurationList = new List<CofigurationPackageDescription>();
             foreach (var file in wspFiles)
             {
                 var fileName = Path.GetFileName(file);
@@ -47,10 +55,10 @@ namespace SPM.Shell.Commands.Init
                     FileName = Path.GetFileName(file)
                 };
 
-                configList.Add(packageConfig);
+                packagesConfigurationList.Add(packageConfig);
             }
 
-            ConfigManager.CreateConfigFile(configList);
+            configService.CreateConfig(packagesConfigurationList);
         }
     }
 }

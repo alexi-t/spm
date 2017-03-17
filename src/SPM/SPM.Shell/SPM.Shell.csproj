@@ -76,6 +76,7 @@
     <Compile Include="Config\ConfigurationRoot.cs" />
     <Compile Include="Exceptions\ConfigFileNotFoundException.cs" />
     <Compile Include="PackageServiceClient.cs" />
+    <Compile Include="Services\ConfigService.cs" />
     <Compile Include="SPM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
