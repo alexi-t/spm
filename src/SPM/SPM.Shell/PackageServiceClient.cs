@@ -32,7 +32,7 @@ namespace SPM.Shell
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(serviceUrl + "/GetCurrentVersion?packageName=" + packageName);
             var currentVersion = await response.Content.ReadAsStringAsync();
-            return packageConfig.Version != currentVersion;
+            return packageConfig.Tag != currentVersion;
         }
 
         public async Task<string> GetNextVersionAsync(string name)
@@ -63,7 +63,7 @@ namespace SPM.Shell
             var httpClient = new HttpClient();
             var content = new MultipartFormDataContent();
             content.Add(new StreamContent(packageFile), "packageData", wspFileName);
-            var response = await httpClient.PostAsync(serviceUrl + $"/Push?packageName={packageConfig.Name}&version={packageConfig.Version}", content);
+            var response = await httpClient.PostAsync(serviceUrl + $"/Push?packageName={packageConfig.Name}&version={packageConfig.Tag}", content);
             if (!response.IsSuccessStatusCode)
                 throw new ApplicationException("Error push package");
         }

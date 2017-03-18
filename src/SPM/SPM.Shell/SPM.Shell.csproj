@@ -34,6 +34,9 @@
     <StartupObject>SPM.Shell.SPM</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="CLAP, Version=4.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CLAP.4.6\lib\net35\CLAP.dll</HintPath>
       <Private>True</Private>
@@ -76,7 +79,14 @@
     <Compile Include="Config\ConfigurationRoot.cs" />
     <Compile Include="Exceptions\ConfigFileNotFoundException.cs" />
     <Compile Include="PackageServiceClient.cs" />
+    <Compile Include="Services\CommandsFactory.cs" />
     <Compile Include="Services\ConfigService.cs" />
+    <Compile Include="Services\FileService.cs" />
+    <Compile Include="Services\IConfigService.cs" />
+    <Compile Include="Services\IFileService.cs" />
+    <Compile Include="Services\IUIService.cs" />
+    <Compile Include="Services\ServiceLocator.cs" />
+    <Compile Include="Services\UIService.cs" />
     <Compile Include="SPM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -37,13 +37,13 @@ namespace SPM.Shell.Commands.Pack
                 using (var fileStream = File.OpenRead(packageName))
                     hashService.ComputeHash(fileStream);
 
-                if (hash == packageConfig.Hash)
-                    continue;
+                //if (hash == packageConfig.Hash)
+                //    continue;
 
                 var nextVersion = await versionService.GetNextVersionAsync(packageConfig.Name);
 
-                packageConfig.Version = nextVersion;
-                packageConfig.Hash = hash;
+                //packageConfig.Version = nextVersion;
+                //packageConfig.Hash = hash;
 
                 ConfigManager.UpdatePackageConfig(packageName, packageConfig);
             }

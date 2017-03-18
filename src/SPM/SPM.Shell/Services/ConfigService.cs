@@ -9,13 +9,20 @@ using System.Threading.Tasks;
 
 namespace SPM.Shell.Services
 {
-    public class ConfigService
+    public class ConfigService : IConfigService
     {
         private const string CONFIG_FILE_NAME = "packages.json";
 
+        private readonly FileService fileService;
+
+        public ConfigService(FileService fileService)
+        {
+            this.fileService = fileService;
+        }
+
         public bool IsConfigExist()
         {
-            return File.Exists(CONFIG_FILE_NAME);
+            return fileService.IsFileExist(CONFIG_FILE_NAME);
         }
 
         public void CreateConfig(List<CofigurationPackageDescription> initialPackages = null)
@@ -37,8 +44,8 @@ namespace SPM.Shell.Services
             }
         }
 
-        private void WriteConfig(ConfigurationRoot config) => File.WriteAllText(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config));
+        private void WriteConfig(ConfigurationRoot config) => fileService.WriteFile(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config));
 
-        private ConfigurationRoot ReadConfig() => JsonConvert.DeserializeObject<ConfigurationRoot>(File.ReadAllText(CONFIG_FILE_NAME));
+        private ConfigurationRoot ReadConfig() => JsonConvert.DeserializeObject<ConfigurationRoot>(fileService.ReadFile(CONFIG_FILE_NAME));
     }
 }

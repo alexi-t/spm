@@ -11,11 +11,15 @@ namespace SPM.Shell.Commands.Init
 {
     public class InitCommand : BaseCommand
     {
-        private readonly ConfigService configService;
+        private readonly IConfigService configService;
+        private readonly IFileService fileService;
+        private readonly IUIService uiService;
 
-        public InitCommand(ConfigService configService) : base("init")
+        public InitCommand(IConfigService configService, IFileService fileService, IUIService uiService) : base("init")
         {
             this.configService = configService;
+            this.fileService = fileService;
+            this.uiService = uiService;
         }
 
         protected override CommandArgument[] GetSupportedArgs()
@@ -24,8 +28,8 @@ namespace SPM.Shell.Commands.Init
             {
                 new CommandArgument
                 {
-                    Name="overwrite",
-                    Alias="o"
+                    Name = "overwrite",
+                    Alias = "o"
                 }
             };
         }
@@ -36,18 +40,18 @@ namespace SPM.Shell.Commands.Init
 
             if (configExist && !parsedArguments.Keys.Any(a => a.Alias == "o"))
                 throw new InvalidOperationException("Config already exist, use --overwrite switch to create new");
-            
-            var wspFiles = Directory.GetFiles(".", "*.wsp");
+
+            var wspFiles = fileService.SearchWorkingDirectory("*.wsp");
 
             var packagesConfigurationList = new List<CofigurationPackageDescription>();
             foreach (var file in wspFiles)
             {
-                var fileName = Path.GetFileName(file);
-                Console.WriteLine($"Enter name for wsp file {fileName} (default ${Path.GetFileNameWithoutExtension(file)})");
-                var name = Console.ReadLine();
+                string fileName = Path.GetFileName(file);
+                string defaultPackageName = Path.GetFileNameWithoutExtension(file);
 
+                string name = uiService.RequestValue($"Enter name for wsp file {fileName} (default ${defaultPackageName}): ");
                 if (string.IsNullOrEmpty(name))
-                    name = Path.GetFileNameWithoutExtension(file);
+                    name = defaultPackageName;
 
                 var packageConfig = new CofigurationPackageDescription
                 {

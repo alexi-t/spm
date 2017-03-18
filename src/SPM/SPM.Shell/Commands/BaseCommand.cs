@@ -15,9 +15,9 @@ namespace SPM.Shell.Commands
             this.command = command;
         }
 
-        public bool CanRun(string command)
+        public string GetName()
         {
-            return string.Equals(this.command, command, StringComparison.InvariantCultureIgnoreCase);
+            return command;
         }
 
         protected virtual CommandArgument[] GetSupportedArgs()

@@ -35,8 +35,7 @@ namespace SPM.Shell.Commands.Install
                 ConfigManager.UpdatePackageConfig(packageName, new CofigurationPackageDescription
                 {
                     Name = packageName,
-                    Hash = "",
-                    Version = package.LastVersion
+                    Tag = package.LastVersion
                 });
             }
         }

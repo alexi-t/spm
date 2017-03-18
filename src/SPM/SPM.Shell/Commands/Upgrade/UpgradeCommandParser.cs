@@ -27,9 +27,9 @@ namespace SPM.Shell.Commands.Upgrade
             foreach (var package in config.Packages.Values)
             {
                 var newVersion = pullService.Pull(package.Name);
-                if (newVersion.Version != package.Version)
+                if (newVersion.Version != package.Tag)
                 {
-                    package.Version = newVersion.Version;
+                    package.Tag = newVersion.Version;
 
                     var httpClient = new HttpClient();
 
