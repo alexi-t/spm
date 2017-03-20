@@ -22,25 +22,8 @@ namespace SPM.Shell.Commands.Init
             this.uiService = uiService;
         }
 
-        protected override CommandArgument[] GetSupportedArgs()
-        {
-            return new[]
-            {
-                new CommandArgument
-                {
-                    Name = "overwrite",
-                    Alias = "o"
-                }
-            };
-        }
-
         protected override void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments)
         {
-            var configExist = configService.IsConfigExist();
-
-            if (configExist && !parsedArguments.Keys.Any(a => a.Alias == "o"))
-                throw new InvalidOperationException("Config already exist, use --overwrite switch to create new");
-
             var wspFiles = fileService.SearchWorkingDirectory("*.wsp");
 
             var packagesConfigurationList = new List<CofigurationPackageDescription>();

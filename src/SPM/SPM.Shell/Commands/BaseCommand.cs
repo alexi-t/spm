@@ -10,9 +10,15 @@ namespace SPM.Shell.Commands
     {
         private readonly string command;
 
-        public BaseCommand(string command)
+        private readonly List<CommandInput> inputs = null;
+        private readonly List<CommandArgument> arguments = null;
+
+        public BaseCommand(string command, IEnumerable<CommandInput> inputs = null, IEnumerable<CommandArgument> arguments = null)
         {
             this.command = command;
+
+            this.inputs = inputs != null ? inputs.ToList() : new List<CommandInput>();
+            this.arguments = arguments != null ? arguments.ToList() : new List<CommandArgument>();
         }
 
         public string GetName()
@@ -20,23 +26,12 @@ namespace SPM.Shell.Commands
             return command;
         }
 
-        protected virtual CommandArgument[] GetSupportedArgs()
-        {
-            return Enumerable.Empty<CommandArgument>().ToArray();
-        }
+        protected CommandInput GetCommandInputByName(string name) => inputs.FirstOrDefault(i => i.Name == name);
 
-        protected virtual CommandInput[] GetInputs()
-        {
-            return Enumerable.Empty<CommandInput>().ToArray();
-        }
-
-        protected abstract void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument,string> parsedArguments);
+        protected abstract void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments);
 
         public void Run(string[] args)
         {
-            var supportedArgs = GetSupportedArgs();
-            var inputs = GetInputs();
-
             int requiredInputsCount = 0;
             foreach (var input in inputs.Where(i => i.Required))
             {
@@ -50,25 +45,23 @@ namespace SPM.Shell.Commands
 
             var parsedInputs = new Dictionary<CommandInput, string>();
             var parsedArguments = new Dictionary<CommandArgument, string>();
-            
+
             while (index < args.Length)
             {
-                if (inputs.Any())
+                if (inputs.Any(i => i.Required))
                 {
-                    var input = inputs.FirstOrDefault(i => i.Index == index);
+                    var input = inputs.FirstOrDefault(i => i.Required && i.Index == index);
                     if (input != null)
                     {
                         parsedInputs.Add(input, args[index]);
                         index++;
                         continue;
                     }
-                    else if (input.Required)
-                        throw new InvalidOperationException($"{input.Name} not provided");
                 }
 
                 var arg = args[index];
                 var argName = arg.TrimStart('-');
-                var argument = supportedArgs.FirstOrDefault(a => a.Name == argName || a.Alias == argName);
+                var argument = arguments.FirstOrDefault(a => a.Name == argName || a.Alias == argName);
                 if (argument != null)
                 {
                     string argValue = string.Empty;
@@ -80,6 +73,15 @@ namespace SPM.Shell.Commands
                     parsedArguments.Add(argument, argValue);
                     index++;
                     continue;
+                }
+
+                if (inputs.Any())
+                {
+                    CommandInput input = inputs.FirstOrDefault(i => i.Index == index);
+                    if (input != null)
+                    {
+                        parsedInputs.Add(input, args[index]);
+                    }
                 }
 
                 throw new InvalidOperationException($"Can not parse {arg}");

@@ -47,5 +47,24 @@ namespace SPM.Shell.Services
         private void WriteConfig(ConfigurationRoot config) => fileService.WriteFile(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config));
 
         private ConfigurationRoot ReadConfig() => JsonConvert.DeserializeObject<ConfigurationRoot>(fileService.ReadFile(CONFIG_FILE_NAME));
+
+        internal List<string> GetAllPackageNames()
+        {
+            ConfigurationRoot root = GetConfig();
+
+            return root.Packages.Keys.ToList();
+        }
+
+        internal void SetPackageTag(string packageName, string tag)
+        {
+            ConfigurationRoot root = ReadConfig();
+
+            if (root.Packages.ContainsKey(packageName))
+                root.Packages[packageName].Tag = tag;
+            else
+                throw new InvalidOperationException($"Can not find package with name {packageName}");
+
+            WriteConfig(root);
+        }
     }
 }

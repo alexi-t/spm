@@ -68,6 +68,8 @@
     <Compile Include="Commands\Pack\IVersionsService.cs" />
     <Compile Include="Commands\Pack\PackCommandFactory.cs" />
     <Compile Include="Commands\Pack\PackCommandParser.cs" />
+    <Compile Include="Commands\Push\PushCommand.cs" />
+    <Compile Include="Commands\Tag\TagCommand.cs" />
     <Compile Include="Commands\Upgrade\IPullService.cs" />
     <Compile Include="Commands\Upgrade\NewPackagePack.cs" />
     <Compile Include="Commands\Upgrade\UpgradeCommandParser.cs" />
@@ -85,6 +87,7 @@
     <Compile Include="Services\IConfigService.cs" />
     <Compile Include="Services\IFileService.cs" />
     <Compile Include="Services\IUIService.cs" />
+    <Compile Include="Services\PackagesService.cs" />
     <Compile Include="Services\ServiceLocator.cs" />
     <Compile Include="Services\UIService.cs" />
     <Compile Include="SPM.cs" />
