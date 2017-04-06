@@ -22,7 +22,7 @@ namespace SPM.Shell.Commands.Init
             this.uiService = uiService;
         }
 
-        protected override void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments)
+        protected override void RunCommand()
         {
             var wspFiles = fileService.SearchWorkingDirectory("*.wsp");
 

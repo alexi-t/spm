@@ -9,15 +9,14 @@ namespace SPM.Shell.Commands.Push
 {
     public class PushCommand : BaseCommand
     {
-        private static CommandInput[] inputs = new[]
+        private static CommandInput packageNameInput = new CommandInput
         {
-            new CommandInput
-            {
-                Name = "packageName",
-                Index = 0 ,
-                Required = false
-            }
+            Name = "packageName",
+            Index = 0,
+            Required = false
         };
+
+        private static CommandInput[] inputs = new[] { packageNameInput };
 
         private readonly IConfigService configService;
 
@@ -26,9 +25,9 @@ namespace SPM.Shell.Commands.Push
             this.configService = configService;
         }
 
-        protected override void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments)
+        protected override void RunCommand()
         {
-            string packageName = ParsePackageName(parsedInput);
+            string packageName = GetCommandInputValue(packageNameInput);
 
             List<string> packagesToPush = !string.IsNullOrEmpty(packageName) ?
                 new List<string> { packageName } :
@@ -38,15 +37,6 @@ namespace SPM.Shell.Commands.Push
             {
 
             }
-        }
-
-        private string ParsePackageName(Dictionary<CommandInput, string> parsedInput)
-        {
-            CommandInput packageName = GetCommandInputByName("packageName");
-            if (parsedInput.ContainsKey(packageName))
-                return parsedInput[packageName];
-
-            return string.Empty;
         }
     }
 }

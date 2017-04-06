@@ -48,14 +48,14 @@ namespace SPM.Shell.Services
 
         private ConfigurationRoot ReadConfig() => JsonConvert.DeserializeObject<ConfigurationRoot>(fileService.ReadFile(CONFIG_FILE_NAME));
 
-        internal List<string> GetAllPackageNames()
+        public List<string> GetAllPackageNames()
         {
             ConfigurationRoot root = GetConfig();
 
             return root.Packages.Keys.ToList();
         }
 
-        internal void SetPackageTag(string packageName, string tag)
+        public void SetPackageTag(string packageName, string tag)
         {
             ConfigurationRoot root = ReadConfig();
 

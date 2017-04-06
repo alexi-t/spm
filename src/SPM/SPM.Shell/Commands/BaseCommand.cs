@@ -19,19 +19,7 @@ namespace SPM.Shell.Commands
 
             this.inputs = inputs != null ? inputs.ToList() : new List<CommandInput>();
             this.arguments = arguments != null ? arguments.ToList() : new List<CommandArgument>();
-        }
 
-        public string GetName()
-        {
-            return command;
-        }
-
-        protected CommandInput GetCommandInputByName(string name) => inputs.FirstOrDefault(i => i.Name == name);
-
-        protected abstract void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments);
-
-        public void Run(string[] args)
-        {
             int requiredInputsCount = 0;
             foreach (var input in inputs.Where(i => i.Required))
             {
@@ -40,11 +28,27 @@ namespace SPM.Shell.Commands
                 else
                     throw new InvalidOperationException("There is a gap in reqired inputs order");
             }
+        }
 
+        public string GetName()
+        {
+            return command;
+        }
+
+        private Dictionary<CommandInput, string> parsedInputs;
+        private Dictionary<CommandArgument, string> parsedArguments;
+
+        protected string GetCommandInputValue(CommandInput input) => parsedInputs.ContainsKey(input) ? parsedInputs[input] : string.Empty;
+        protected string GetArgumentValue(CommandArgument argument) => parsedArguments.ContainsKey(argument) ? parsedArguments[argument] : string.Empty;
+
+        protected abstract void RunCommand();
+
+        public void Run(string[] args)
+        {
             var index = 0;
 
-            var parsedInputs = new Dictionary<CommandInput, string>();
-            var parsedArguments = new Dictionary<CommandArgument, string>();
+            parsedInputs = new Dictionary<CommandInput, string>();
+            parsedArguments = new Dictionary<CommandArgument, string>();
 
             while (index < args.Length)
             {
@@ -81,13 +85,14 @@ namespace SPM.Shell.Commands
                     if (input != null)
                     {
                         parsedInputs.Add(input, args[index]);
+                        continue;
                     }
                 }
 
                 throw new InvalidOperationException($"Can not parse {arg}");
             }
 
-            RunCommand(parsedInputs, parsedArguments);
+            RunCommand();
         }
     }
 }

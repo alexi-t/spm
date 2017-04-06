@@ -10,21 +10,23 @@ namespace SPM.Shell.Commands.Tag
 {
     public class TagCommand : BaseCommand
     {
-        private static CommandInput[] commandInput = new[]
+        private static CommandInput packageNameInput = 
+            new CommandInput
             {
-                new CommandInput
-                {
-                    Name = "package",
-                    Index = 0,
-                    Required = false
-                },
-                new CommandInput
-                {
-                    Name = "tag",
-                    Index = 1,
-                    Required = false
-                }
+                Name = "package",
+                Index = 0,
+                Required = false
             };
+
+        private static CommandInput tagNameInput =
+            new CommandInput
+            {
+                Name = "tag",
+                Index = 1,
+                Required = false
+            };
+
+        private static CommandInput[] commandInput = new [] { packageNameInput, tagNameInput };
 
         private readonly IConfigService configService;
 
@@ -33,37 +35,35 @@ namespace SPM.Shell.Commands.Tag
             this.configService = configService;
         }
 
-        private string ParsePackage(Dictionary<CommandInput, string> parsedInput)
+        private string GetPackageName()
         {
             List<string> packageNames = configService.GetAllPackageNames();
 
-            CommandInput packageNameInput = GetCommandInputByName("packageName");
-            if (parsedInput.ContainsKey(packageNameInput))
+            string providedName = GetCommandInputValue(packageNameInput);
+
+            if (string.IsNullOrEmpty(providedName))
             {
-                string packageName = parsedInput[packageNameInput];
-
-                if (!packageNames.Contains(packageName))
-                    throw new InvalidOperationException($"Package with name {packageName} not found");
-
-                return packageName;
+                if (packageNames.Count() == 1)
+                {
+                    return packageNames.First();
+                }
             }
-            else if (packageNames.Count() == 1)
+            else if (packageNames.Contains(providedName))
             {
-                return packageNames.First();
+                return providedName;
             }
             else
-                throw new InvalidOperationException("Package not provided");
+            {
+                throw new InvalidOperationException($"Package with name {providedName} not found");
+            }
+
+            throw new InvalidOperationException("Package not provided");
         }
 
-        private string ParseTag(Dictionary<CommandInput, string> parsedInput)
+        private string GetTagName()
         {
-            string tag = string.Empty;
-
-            CommandInput tagInput = GetCommandInputByName("tag");
-
-            if (parsedInput.ContainsKey(tagInput))
-                tag = parsedInput[tagInput];
-
+            string tag = GetCommandInputValue(tagNameInput);
+            
             if (string.IsNullOrEmpty(tag))
             {
                 tag = DateTime.Now.ToString("yyyyMMdd");
@@ -72,10 +72,10 @@ namespace SPM.Shell.Commands.Tag
             return tag;
         }
 
-        protected override void RunCommand(Dictionary<CommandInput, string> parsedInput, Dictionary<CommandArgument, string> parsedArguments)
+        protected override void RunCommand()
         {
-            string packageName = ParsePackage(parsedInput);
-            string tag = ParseTag(parsedInput);
+            string packageName = GetPackageName();
+            string tag = GetTagName();
 
             configService.SetPackageTag(packageName, tag);
         }
