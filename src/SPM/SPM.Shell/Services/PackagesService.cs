@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using SPM.Shell.Services.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SPM.Shell.Services
 {
-    public class PackagesService
+    public class PackagesService : IPackagesService
     {
         private readonly HttpClient httpClient;
 
@@ -20,13 +22,13 @@ namespace SPM.Shell.Services
             };
         }
 
-        public async Task UploadPackageAsync(string name, string tag, Stream fileStream)
+        public async Task UploadPackageAsync(string name, Stream fileStream)
         {
-            var content = new MultipartFormDataContent();
-            content.Add(new StringContent(name), "name");
-            content.Add(new StringContent(tag), "tag");
-            content.Add(new StreamContent(fileStream), "packageFile", "package.wsp");
-
+            var content = new MultipartFormDataContent
+            {
+                { new StringContent(name), "name" },
+                { new StreamContent(fileStream), "packageFile", "package.wsp" }
+            };
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
@@ -43,6 +45,25 @@ namespace SPM.Shell.Services
             }
             else
                 throw new InvalidOperationException(responseContent);
+        }
+
+        public async Task<PackageInfo> SearchPackageAsync(string name)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"/get?name={name}", UriKind.Relative),
+                Method = HttpMethod.Get
+            };
+
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string packageJSON = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<PackageInfo>(packageJSON);
+            }
+            return null;
         }
     }
 }

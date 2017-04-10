@@ -72,7 +72,7 @@ namespace SPM.Shell.Commands.Tag
             return tag;
         }
 
-        protected override void RunCommand()
+        protected override void RunCommandAsync()
         {
             string packageName = GetPackageName();
             string tag = GetTagName();

@@ -29,5 +29,10 @@ namespace SPM.Shell.Services
         {
             return File.Exists(path);
         }
+
+        public Stream ReadFileAsStream(string fileName)
+        {
+            return File.OpenRead(fileName);
+        }
     }
 }

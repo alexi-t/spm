@@ -1,6 +1,7 @@
 ﻿using SPM.Shell.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,23 +20,34 @@ namespace SPM.Shell.Commands.Push
         private static CommandInput[] inputs = new[] { packageNameInput };
 
         private readonly IConfigService configService;
+        private readonly IPackagesService packagesService;
+        private readonly IFileService fileService;
 
-        public PushCommand(IConfigService configService) : base("push", inputs)
+        public PushCommand(IConfigService configService, IPackagesService packagesService, IFileService fileService) : base("push", inputs)
         {
             this.configService = configService;
+            this.packagesService = packagesService;
+            this.fileService = fileService;
         }
 
-        protected override void RunCommand()
+        protected override async void RunCommandAsync()
         {
-            string packageName = GetCommandInputValue(packageNameInput);
+            string providedPackageName = GetCommandInputValue(packageNameInput);
 
-            List<string> packagesToPush = !string.IsNullOrEmpty(packageName) ?
-                new List<string> { packageName } :
-                configService.GetAllPackageNames();
+            List<string> availablePackages = configService.GetAllPackageNames();
 
-            foreach (var package in packagesToPush)
+            if (!string.IsNullOrEmpty(providedPackageName) &&
+                !availablePackages.Contains(providedPackageName))
+                throw new ArgumentOutOfRangeException();
+
+            List<string> packagesToPush = !string.IsNullOrEmpty(providedPackageName) ?
+                new List<string> { providedPackageName } :
+                availablePackages;
+
+            foreach (var packageName in packagesToPush)
             {
-
+                using (Stream fileStream = fileService.ReadFileAsStream(packageName))
+                    await this.packagesService.UploadPackageAsync(packageName, fileStream);
             }
         }
     }

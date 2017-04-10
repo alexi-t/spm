@@ -1,13 +1,5 @@
-﻿using CLAP;
-using SPM.Shell.Commands.Init;
-using SPM.Shell.Commands.Pack;
-using SPM.Shell.Commands.Push;
-using SPM.Shell.Services;
-using System;
-using System.Collections.Generic;
+﻿using SPM.Shell.Services;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SPM.Shell
 {

@@ -22,7 +22,7 @@ namespace SPM.Shell.Commands.Init
             this.uiService = uiService;
         }
 
-        protected override void RunCommand()
+        protected override void RunCommandAsync()
         {
             var wspFiles = fileService.SearchWorkingDirectory("*.wsp");
 
