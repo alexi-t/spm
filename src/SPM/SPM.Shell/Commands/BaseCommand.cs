@@ -41,9 +41,9 @@ namespace SPM.Shell.Commands
         protected string GetCommandInputValue(CommandInput input) => parsedInputs.ContainsKey(input) ? parsedInputs[input] : string.Empty;
         protected string GetArgumentValue(CommandArgument argument) => parsedArguments.ContainsKey(argument) ? parsedArguments[argument] : string.Empty;
 
-        protected abstract void RunCommandAsync();
+        protected abstract Task RunCommandAsync();
 
-        public void Run(string[] args)
+        public async Task RunAsync(string[] args)
         {
             var index = 0;
 
@@ -92,7 +92,7 @@ namespace SPM.Shell.Commands
                 throw new InvalidOperationException($"Can not parse {arg}");
             }
 
-            RunCommandAsync();
+            await RunCommandAsync();
         }
     }
 }

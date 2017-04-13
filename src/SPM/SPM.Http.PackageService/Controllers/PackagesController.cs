@@ -63,8 +63,12 @@ namespace SPM.Http.PackageService.Controllers
 
         // POST api/values
         [HttpPost]
-        public async Task<IActionResult> PostAsync(string name, string tag, IFormFile packageFile)
+        public async Task<IActionResult> PostAsync([FromForm(Name = "name")]string nameAndTag, IFormFile packageFile)
         {
+            int separatorIndex = nameAndTag.LastIndexOf('@');
+            string name = nameAndTag.Substring(0, separatorIndex);
+            string tag = nameAndTag.Substring(separatorIndex + 1);
+
             var package = await packageService.GetPackageByNameAndTagAsync(name, tag);
             if (package != null)
                 return BadRequest("Package with same name and tag already exist!");

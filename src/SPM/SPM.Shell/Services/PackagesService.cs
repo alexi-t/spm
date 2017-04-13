@@ -65,5 +65,24 @@ namespace SPM.Shell.Services
             }
             return null;
         }
+
+        public async Task<string[]> GetPackageTagsAsync(string packageName)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"/getAll?name={packageName}", UriKind.Relative),
+                Method = HttpMethod.Get
+            };
+            
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string arrayJSON = await response.Content.ReadAsStringAsync();
+
+                return Newtonsoft.Json.Linq.JArray.Parse(arrayJSON).Select(t => t.ToObject<string>()).ToArray();
+            }
+            return new string[0];
+        }
     }
 }

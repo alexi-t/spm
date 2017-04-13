@@ -10,5 +10,6 @@ namespace SPM.Shell.Services
         string[] SearchWorkingDirectory(string filter);
         void WriteFile(string path, string content);
         Stream ReadFileAsStream(string packageName);
+        Task DownloadPackage(string name, string tag, string downloadLink);
     }
 }

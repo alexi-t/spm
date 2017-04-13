@@ -30,7 +30,7 @@ namespace SPM.Shell.Commands.Push
             this.fileService = fileService;
         }
 
-        protected override async void RunCommandAsync()
+        protected override async Task RunCommandAsync()
         {
             string providedPackageName = GetCommandInputValue(packageNameInput);
 

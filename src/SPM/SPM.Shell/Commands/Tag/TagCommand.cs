@@ -10,7 +10,7 @@ namespace SPM.Shell.Commands.Tag
 {
     public class TagCommand : BaseCommand
     {
-        private static CommandInput packageNameInput = 
+        private static CommandInput packageNameInput =
             new CommandInput
             {
                 Name = "package",
@@ -26,7 +26,7 @@ namespace SPM.Shell.Commands.Tag
                 Required = false
             };
 
-        private static CommandInput[] commandInput = new [] { packageNameInput, tagNameInput };
+        private static CommandInput[] commandInput = new[] { packageNameInput, tagNameInput };
 
         private readonly IConfigService configService;
 
@@ -63,7 +63,7 @@ namespace SPM.Shell.Commands.Tag
         private string GetTagName()
         {
             string tag = GetCommandInputValue(tagNameInput);
-            
+
             if (string.IsNullOrEmpty(tag))
             {
                 tag = DateTime.Now.ToString("yyyyMMdd");
@@ -72,12 +72,14 @@ namespace SPM.Shell.Commands.Tag
             return tag;
         }
 
-        protected override void RunCommandAsync()
+        protected override Task RunCommandAsync()
         {
             string packageName = GetPackageName();
             string tag = GetTagName();
 
             configService.SetPackageTag(packageName, tag);
+
+            return Task.FromResult(0);
         }
     }
 }
