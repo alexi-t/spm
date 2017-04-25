@@ -21,13 +21,14 @@ namespace SPM.Shell.Commands
             this.arguments = arguments != null ? arguments.ToList() : new List<CommandArgument>();
 
             int requiredInputsCount = 0;
-            foreach (var input in inputs.Where(i => i.Required))
-            {
-                if (input.Index == requiredInputsCount)
-                    requiredInputsCount++;
-                else
-                    throw new InvalidOperationException("There is a gap in reqired inputs order");
-            }
+            if (inputs != null)
+                foreach (var input in inputs.Where(i => i.Required))
+                {
+                    if (input.Index == requiredInputsCount)
+                        requiredInputsCount++;
+                    else
+                        throw new InvalidOperationException("There is a gap in reqired inputs order");
+                }
         }
 
         public string GetName()
@@ -84,7 +85,7 @@ namespace SPM.Shell.Commands
                     CommandInput input = inputs.FirstOrDefault(i => i.Index == index);
                     if (input != null)
                     {
-                        parsedInputs.Add(input, args[index]);
+                        parsedInputs.Add(input, args[index++]);
                         continue;
                     }
                 }

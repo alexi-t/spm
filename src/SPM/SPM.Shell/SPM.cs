@@ -15,9 +15,9 @@ namespace SPM.Shell
             {
                 var commandName = args[0];
                 if (commands.ContainsKey(commandName))
-                    commands[commandName].RunAsync(args.Skip(1).ToArray());
+                    commands[commandName].RunAsync(args.Skip(1).ToArray()).Wait();
             }
-            
+
             return 0;
         }
     }

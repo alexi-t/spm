@@ -44,7 +44,7 @@ namespace SPM.Shell.Services
             }
         }
 
-        private void WriteConfig(ConfigurationRoot config) => fileService.WriteFile(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config));
+        private void WriteConfig(ConfigurationRoot config) => fileService.WriteFile(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config, Formatting.Indented));
 
         private ConfigurationRoot ReadConfig() => JsonConvert.DeserializeObject<ConfigurationRoot>(fileService.ReadFile(CONFIG_FILE_NAME));
 

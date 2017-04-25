@@ -1,4 +1,5 @@
-﻿using SPM.Shell.Services;
+﻿using SPM.Shell.Config;
+using SPM.Shell.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,20 +35,20 @@ namespace SPM.Shell.Commands.Push
         {
             string providedPackageName = GetCommandInputValue(packageNameInput);
 
-            List<string> availablePackages = configService.GetAllPackageNames();
+            List<CofigurationPackageDescription> availablePackages = configService.GetConfig().Packages.Select(p => p.Value).ToList();
 
             if (!string.IsNullOrEmpty(providedPackageName) &&
-                !availablePackages.Contains(providedPackageName))
+                !availablePackages.Any(p => p.Name == providedPackageName))
                 throw new ArgumentOutOfRangeException();
 
-            List<string> packagesToPush = !string.IsNullOrEmpty(providedPackageName) ?
-                new List<string> { providedPackageName } :
+            List<CofigurationPackageDescription> packagesToPush = !string.IsNullOrEmpty(providedPackageName) ?
+                availablePackages.Where(p => p.Name == providedPackageName).ToList() :
                 availablePackages;
 
-            foreach (var packageName in packagesToPush)
+            foreach (var package in packagesToPush)
             {
-                using (Stream fileStream = fileService.ReadFileAsStream(packageName))
-                    await this.packagesService.UploadPackageAsync(packageName, fileStream);
+                using (Stream fileStream = fileService.ReadFileAsStream(package.FileName))
+                    await this.packagesService.UploadPackageAsync($"{package.Name}@{package.Tag}", fileStream);
             }
         }
     }

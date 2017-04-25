@@ -21,6 +21,7 @@ namespace SPM.Shell.Services
             builder.RegisterType<UIService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<FileService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ConfigService>().AsImplementedInterfaces().SingleInstance();
+            builder.Register(ctx => new PackagesService("http://localhost:5001/packages")).AsImplementedInterfaces().SingleInstance();
 
             this.container = builder.Build();
         }

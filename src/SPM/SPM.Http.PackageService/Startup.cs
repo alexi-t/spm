@@ -28,7 +28,7 @@ namespace SPM.Http.PackageService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient(p=>new FileService(Configuration["FileService"]));
+            services.AddTransient(p => new FileService(Configuration["FileService"]));
             services.AddTransient(p => new Service.PackageService(Configuration["StorageConnectionString"]));
 
             // Add framework services.
