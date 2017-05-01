@@ -25,6 +25,13 @@ namespace SPM.Shell.Services
                 Console.Write(message);
         }
 
+        public void DisplayProgress(float progress)
+        {
+            int progressInt = (int)(progress * .5);
+            Console.Write("\r");
+            Console.Write($"[{new string('.', progressInt).PadRight(50)}]");
+        }
+
         public string RequestValue(string message = null, bool appenNewline = false)
         {
             if (!string.IsNullOrEmpty(message))

@@ -73,6 +73,7 @@
     <Compile Include="Services\IFileService.cs" />
     <Compile Include="Services\IPackagesService.cs" />
     <Compile Include="Services\IUIService.cs" />
+    <Compile Include="Services\Model\HttpProgress.cs" />
     <Compile Include="Services\Model\PackageInfo.cs" />
     <Compile Include="Services\PackagesService.cs" />
     <Compile Include="Services\ServiceLocator.cs" />

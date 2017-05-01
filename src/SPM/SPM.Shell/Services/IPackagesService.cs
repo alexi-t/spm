@@ -8,5 +8,7 @@ namespace SPM.Shell.Services
     {
         Task<PackageInfo> SearchPackageAsync(string name);
         Task UploadPackageAsync(string name, Stream fileStream);
+
+        HttpOperationWithProgress DownloadPackage(string name, string tag);
     }
 }

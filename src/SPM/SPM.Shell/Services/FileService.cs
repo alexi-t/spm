@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SPM.Shell.Services.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace SPM.Shell.Services
     {
         private readonly string localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
         private const string SPMFolderName = "SPM";
+        private const string CacheFolderName = "Cache";
 
         public string[] SearchWorkingDirectory(string filter)
         {
@@ -42,34 +44,45 @@ namespace SPM.Shell.Services
         private string EnsureLocalDataPath(params string[] folders)
         {
             string currentPath = localAppDataFolder;
-            foreach (string folderName in folders)
+            foreach (string folderName in new[] { SPMFolderName }.Union(folders))
             {
                 string folderPath = Path.Combine(currentPath, folderName);
                 if (!Directory.Exists(folderPath))
                     Directory.CreateDirectory(folderPath);
+                currentPath = folderPath;
             }
 
             return currentPath;
         }
-
-        public async Task DownloadPackage(string name, string tag, string downloadLink)
+        
+        public bool IsPackageExistInCache(string name, string tag)
         {
-            using (var httpClient = new HttpClient())
+            string packagesCacheFolder = EnsureLocalDataPath("cache");
+
+            string packageCacheFolderPath = Path.Combine(packagesCacheFolder, name);
+            if (!Directory.Exists(packageCacheFolderPath))
+                return false;
+
+            string packageVersionFolderPath = Path.Combine(packagesCacheFolder, tag);
+            if (!Directory.Exists(packageVersionFolderPath))
+                return false;
+
+            return true;
+        }
+        
+
+        public void SavePackageInCache(string packageName, string packageTag, byte[] packagePayload)
+        {
+            string packageCachePath = EnsureLocalDataPath(CacheFolderName, packageName, packageTag);
+            string packagePath = Path.Combine(packageCachePath, $"{packageName}.wsp");
+            File.WriteAllBytes(packagePath, packagePayload);
+        }
+
+        public void ExtractPackageFromCache(string packageName, string packageTag)
+        {
+            foreach (var packageFile in Directory.GetFiles(EnsureLocalDataPath(CacheFolderName, packageName, packageTag)))
             {
-                string downloadFolderPath = EnsureLocalDataPath(name, tag);
-                string packageDownloadPath = Path.Combine(downloadFolderPath, "package.wsp");
-                byte[] buffer = new byte[4096];
-                using (Stream downloadStream = await httpClient.GetStreamAsync(downloadLink))
-                using (FileStream fileStream = File.Create(packageDownloadPath))
-                {
-                    while(downloadStream.Position != downloadStream.Length)
-                    {
-                        int bytesToRead = (int)Math.Min(buffer.Length, downloadStream.Length - downloadStream.Position);
-                        await downloadStream.ReadAsync(buffer, 0, bytesToRead);
-                        await fileStream.WriteAsync(buffer, 0, bytesToRead);
-                    }
-                }
-                File.Copy(packageDownloadPath, "package.wsp");
+                File.Copy(packageFile, Path.GetFileName(packageFile), true);
             }
         }
     }

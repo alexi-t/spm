@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.IO;
 using Microsoft.WindowsAzure.Storage;
+using System.Net.Http.Headers;
 
 namespace SPM.Http.FileService.Controllers
 {
@@ -68,7 +69,10 @@ namespace SPM.Http.FileService.Controllers
             var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
 
             if (fileDataHash == fileHash)
+            {
+                Response.Headers.Append("Content-Length", new Microsoft.Extensions.Primitives.StringValues(fileData.Length.ToString()));
                 return File(fileData, "application/octet-stream");
+            }
 
             return NotFound();
         }

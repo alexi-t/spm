@@ -10,6 +10,8 @@ namespace SPM.Shell.Services
         string[] SearchWorkingDirectory(string filter);
         void WriteFile(string path, string content);
         Stream ReadFileAsStream(string packageName);
-        Task DownloadPackage(string name, string tag, string downloadLink);
+        bool IsPackageExistInCache(string packageName, string packageTag);
+        void SavePackageInCache(string packageName, string packageTag, byte[] packagePayload);
+        void ExtractPackageFromCache(string packageName, string packageTag);
     }
 }

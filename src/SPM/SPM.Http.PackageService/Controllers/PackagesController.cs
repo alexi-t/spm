@@ -90,5 +90,33 @@ namespace SPM.Http.PackageService.Controllers
             }
             return BadRequest("Internal error in file service.");
         }
+
+
+        [HttpGet("download")]
+        public async Task<IActionResult> GetDownloadLink(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return BadRequest();
+
+            var separatorIndex = name.IndexOf('@');
+            var packageName = name.Substring(0, separatorIndex);
+            if (string.IsNullOrEmpty(packageName))
+                return BadRequest();
+
+            string tag = string.Empty;
+            if (separatorIndex > -1)
+                tag = name.Substring(separatorIndex + 1);
+            else
+                tag = "lastest";
+
+            var package = await packageService.GetPackageByNameAndTagAsync(packageName, tag);
+
+            if (package == null)
+                return NotFound();
+
+            var packageInfo = new PackageInfo(package, fileService.GetDowloadLinkFormat());
+
+            return Redirect(packageInfo.DownloadLink);
+        }
     }
 }

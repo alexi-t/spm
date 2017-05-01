@@ -51,7 +51,7 @@ namespace SPM.Shell.Services
         {
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"/get?name={name}", UriKind.Relative),
+                RequestUri = new Uri($"packages/get?name={name}", UriKind.Relative),
                 Method = HttpMethod.Get
             };
 
@@ -70,7 +70,7 @@ namespace SPM.Shell.Services
         {
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"/getAll?name={packageName}", UriKind.Relative),
+                RequestUri = new Uri($"packages/getAll?name={packageName}", UriKind.Relative),
                 Method = HttpMethod.Get
             };
             
@@ -83,6 +83,17 @@ namespace SPM.Shell.Services
                 return Newtonsoft.Json.Linq.JArray.Parse(arrayJSON).Select(t => t.ToObject<string>()).ToArray();
             }
             return new string[0];
+        }
+
+        public HttpOperationWithProgress DownloadPackage(string name, string tag)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"packages/download?name={name}@{tag}", UriKind.Relative),
+                Method = HttpMethod.Get
+            };
+
+            return new HttpOperationWithProgress(httpClient, request);
         }
     }
 }
