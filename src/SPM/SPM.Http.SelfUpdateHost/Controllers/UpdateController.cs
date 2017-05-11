@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using System.IO;
+using System.Net.Http;
 
 namespace SPM.Http.SelfUpdateHost.Controllers
 {
@@ -24,18 +26,36 @@ namespace SPM.Http.SelfUpdateHost.Controllers
         {
             return string.Empty;
         }
-        
+
         // PUT api/values/5
         [HttpPut("{fileName}")]
-        public IActionResult Put(string version, IFormFile zip, [FromHeader(Name = "X-ServerDigest")]string digest)
+        public async Task<IActionResult> PutAsync([FromBody]IFormFile file, [FromHeader(Name = "X-PackageVersion")]string version, [FromHeader(Name = "X-ServerDigest")]string digest)
         {
             if (digest != config.ServerDigest)
                 return Unauthorized();
 
-            if (zip == null || string.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(version))
                 return BadRequest();
 
-            return Ok();
+            using (var ms = new MemoryStream())
+            {
+                file.CopyTo(ms);
+
+                using (var client = new HttpClient())
+                {
+                    HttpResponseMessage response = 
+                        await client.PostAsync(config.FileServiceUrl,
+                        new MultipartFormDataContent
+                        {
+                            { new ByteArrayContent(ms.ToArray()), "data", "package.wsp" },
+                            { new StringContent($"spm_{version}"), "key" }
+                        });
+                    if (response.IsSuccessStatusCode)
+                        return Ok();
+                    else
+                        return BadRequest(await response.Content.ReadAsStringAsync());
+                }
+            }
         }
     }
 }

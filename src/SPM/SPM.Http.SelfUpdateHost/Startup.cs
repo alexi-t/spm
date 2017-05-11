@@ -28,7 +28,10 @@ namespace SPM.Http.SelfUpdateHost
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(ops =>
+            {
+                ops.InputFormatters.Add(new CUrlFileTransferFormatter());
+            });
             services.AddOptions();
 
             services.Configure<Config>(Configuration);
