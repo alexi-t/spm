@@ -35,6 +35,9 @@ namespace SPM.Http.SelfUpdateHost
             services.AddOptions();
 
             services.Configure<Config>(Configuration);
+
+            services.AddTransient<StoreService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,8 +45,24 @@ namespace SPM.Http.SelfUpdateHost
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
-            app.UseMvc();
+            app.UseStaticFiles();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 
@@ -51,5 +70,6 @@ namespace SPM.Http.SelfUpdateHost
     {
         public string ServerDigest { get; set; }
         public string FileServiceUrl { get; set; }
+        public string StorageConnectionString { get; set; }
     }
 }

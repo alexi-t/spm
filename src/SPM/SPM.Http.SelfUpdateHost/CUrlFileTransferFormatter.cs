@@ -24,9 +24,11 @@ namespace SPM.Http.SelfUpdateHost
 
         public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
+            context.HttpContext.Request.EnableRewind();
+
             string fileName = Path.GetFileName(context.HttpContext.Request.Path.Value);
             var file = new FormFile(context.HttpContext.Request.Body, 0, context.HttpContext.Request.ContentLength.GetValueOrDefault(), context.ModelName, fileName);
-
+            
             return InputFormatterResult.SuccessAsync(file);
         }
     }
