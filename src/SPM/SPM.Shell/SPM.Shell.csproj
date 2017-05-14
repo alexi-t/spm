@@ -34,6 +34,9 @@
     <StartupObject>SPM.Shell.SPM</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="CLAP, Version=4.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CLAP.4.6\lib\net35\CLAP.dll</HintPath>
       <Private>True</Private>
@@ -52,26 +55,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\Init\InitCommandParser.cs" />
-    <Compile Include="Commands\Install\InstallCommandParser.cs" />
-    <Compile Include="Commands\Install\IPackageService.cs" />
-    <Compile Include="Commands\Install\PackageDescription.cs" />
-    <Compile Include="Commands\Pack\FileHashService.cs" />
-    <Compile Include="Commands\Pack\IHashService.cs" />
-    <Compile Include="Commands\Pack\IVersionsService.cs" />
-    <Compile Include="Commands\Pack\PackCommandFactory.cs" />
-    <Compile Include="Commands\Pack\PackCommandParser.cs" />
-    <Compile Include="Commands\Upgrade\IPullService.cs" />
-    <Compile Include="Commands\Upgrade\NewPackagePack.cs" />
-    <Compile Include="Commands\Upgrade\UpgradeCommandParser.cs" />
-    <Compile Include="Commands\Push\IPackageService.cs" />
-    <Compile Include="Commands\Push\PushCommandFactory.cs" />
-    <Compile Include="Commands\Push\PushCommandParser.cs" />
+    <Compile Include="Commands\BaseCommand.cs" />
+    <Compile Include="Commands\CommandArgument.cs" />
+    <Compile Include="Commands\CommandInput.cs" />
+    <Compile Include="Commands\Init\InitCommand.cs" />
+    <Compile Include="Commands\Pull\PullCommand.cs" />
+    <Compile Include="Commands\Push\PushCommand.cs" />
+    <Compile Include="Commands\Tag\TagCommand.cs" />
     <Compile Include="Config\CofigurationPackageDescription.cs" />
     <Compile Include="Config\ConfigReader.cs" />
     <Compile Include="Config\ConfigurationRoot.cs" />
     <Compile Include="Exceptions\ConfigFileNotFoundException.cs" />
-    <Compile Include="PackageServiceClient.cs" />
+    <Compile Include="Services\CommandsFactory.cs" />
+    <Compile Include="Services\ConfigService.cs" />
+    <Compile Include="Services\FileService.cs" />
+    <Compile Include="Services\IConfigService.cs" />
+    <Compile Include="Services\IFileService.cs" />
+    <Compile Include="Services\IPackagesService.cs" />
+    <Compile Include="Services\IUIService.cs" />
+    <Compile Include="Services\Model\HttpProgress.cs" />
+    <Compile Include="Services\Model\PackageInfo.cs" />
+    <Compile Include="Services\PackagesService.cs" />
+    <Compile Include="Services\ServiceLocator.cs" />
+    <Compile Include="Services\UIService.cs" />
     <Compile Include="SPM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

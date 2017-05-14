@@ -5,15 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SPM.Shell.Config
+namespace SPM.Shell.Services.Model
 {
-    public class CofigurationPackageDescription
+    public class PackageInfo
     {
         [JsonProperty("name")]
         public string Name { get; set; }
-        [JsonProperty("fileName")]
-        public string FileName { get; set; }
         [JsonProperty("tag")]
         public string Tag { get; set; }
+        [JsonProperty("downloadLink")]
+        public string DownloadLink { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.IO;
 using Microsoft.WindowsAzure.Storage;
+using System.Net.Http.Headers;
 
 namespace SPM.Http.FileService.Controllers
 {
@@ -24,6 +25,12 @@ namespace SPM.Http.FileService.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromForm]string key, IFormFile data)
         {
+            if (string.IsNullOrEmpty(key))
+                return BadRequest("Key is empty");
+
+            if (data == null)
+                return BadRequest("Data is empty");
+
             var hash = SHA256.Create();
             var keyHash = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
             var dataStream = data.OpenReadStream();
@@ -41,6 +48,12 @@ namespace SPM.Http.FileService.Controllers
         [HttpGet("{key}/{fileHash}")]
         public async Task<IActionResult> GetAsync(string key, string fileHash)
         {
+            if (string.IsNullOrEmpty(key))
+                return BadRequest("Key is empty");
+
+            if (string.IsNullOrEmpty(fileHash))
+                return BadRequest("Hash is empty");
+
             byte[] fileData = null;
 
             try
@@ -56,7 +69,10 @@ namespace SPM.Http.FileService.Controllers
             var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
 
             if (fileDataHash == fileHash)
+            {
+                Response.Headers.Append("Content-Length", new Microsoft.Extensions.Primitives.StringValues(fileData.Length.ToString()));
                 return File(fileData, "application/octet-stream");
+            }
 
             return NotFound();
         }

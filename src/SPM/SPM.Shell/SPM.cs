@@ -1,12 +1,5 @@
-﻿using CLAP;
-using SPM.Shell.Commands.Init;
-using SPM.Shell.Commands.Pack;
-using SPM.Shell.Commands.Push;
-using System;
-using System.Collections.Generic;
+﻿using SPM.Shell.Services;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SPM.Shell
 {
@@ -15,39 +8,17 @@ namespace SPM.Shell
 
         public static int Main(params string[] args)
         {
-            int result = -1;
+            var commandsFactory = new CommandsFactory();
+            var commands = commandsFactory.GetCommandBindings();
 
-
-            var parsers = new object[] {
-                new InitCommandParser(),
-                PackCommandFactory.CreateInstance(),
-                PushCommandFactory.CreateInstance()
-            };
-
-            int index = 0;
-            while (result != 0)
+            if (args.Length > 0)
             {
-                try
-                {
-                    result = Parser.Run(args, parsers[index++]);
-                }
-                catch (VerbNotFoundException)
-                {
-                    continue;
-                }
+                var commandName = args[0];
+                if (commands.ContainsKey(commandName))
+                    commands[commandName].RunAsync(args.Skip(1).ToArray()).Wait();
             }
 
             return 0;
-        }
-
-        public class Commands
-        {
-            [Verb(Aliases = "update-self")]
-            public static void UpdateSelf()
-            {
-                Console.WriteLine("Update");
-            }
-
         }
     }
 }

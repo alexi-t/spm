@@ -19,7 +19,7 @@ namespace SPM.Http.PackageService.Controllers
             this.packageService = packageService;
             this.fileService = fileService;
         }
-        
+
         [HttpGet("getAll")]
         public async Task<IActionResult> GetAllTagsAsync([FromQuery]string name, [FromQuery]int count = 10)
         {
@@ -33,7 +33,7 @@ namespace SPM.Http.PackageService.Controllers
 
             return Ok(tags.Select(t => $"{name}@{t}"));
         }
-        
+
         [HttpGet("get")]
         public async Task<IActionResult> GetAsync([FromQuery]string name)
         {
@@ -47,7 +47,7 @@ namespace SPM.Http.PackageService.Controllers
 
             string tag = string.Empty;
             if (separatorIndex > -1)
-                tag = name.Substring(separatorIndex);
+                tag = name.Substring(separatorIndex + 1);
             else
                 tag = "lastest";
 
@@ -56,16 +56,25 @@ namespace SPM.Http.PackageService.Controllers
             if (package == null)
                 return NotFound();
 
-            return Ok(package);
+            var packageInfo = new PackageInfo(package, fileService.GetDowloadLinkFormat());
+
+            return Ok(packageInfo);
         }
 
         // POST api/values
         [HttpPost]
-        public async Task<IActionResult> PostAsync(string name, string tag, IFormFile packageFile)
+        public async Task<IActionResult> PostAsync([FromForm(Name = "name")]string nameAndTag, IFormFile packageFile)
         {
+            int separatorIndex = nameAndTag.LastIndexOf('@');
+            string name = nameAndTag.Substring(0, separatorIndex);
+            string tag = nameAndTag.Substring(separatorIndex + 1);
+
             var package = await packageService.GetPackageByNameAndTagAsync(name, tag);
             if (package != null)
-                return BadRequest();
+                return BadRequest("Package with same name and tag already exist!");
+
+            if (packageFile == null)
+                return BadRequest("No package file provided");
 
             byte[] packageData = new byte[packageFile.Length];
             using (var stream = packageFile.OpenReadStream())
@@ -79,7 +88,35 @@ namespace SPM.Http.PackageService.Controllers
             {
                 return Ok(await packageService.AddPackageAsync(name, tag, fileHash));
             }
-            return BadRequest();
+            return BadRequest("Internal error in file service.");
+        }
+
+
+        [HttpGet("download")]
+        public async Task<IActionResult> GetDownloadLink(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return BadRequest();
+
+            var separatorIndex = name.IndexOf('@');
+            var packageName = name.Substring(0, separatorIndex);
+            if (string.IsNullOrEmpty(packageName))
+                return BadRequest();
+
+            string tag = string.Empty;
+            if (separatorIndex > -1)
+                tag = name.Substring(separatorIndex + 1);
+            else
+                tag = "lastest";
+
+            var package = await packageService.GetPackageByNameAndTagAsync(packageName, tag);
+
+            if (package == null)
+                return NotFound();
+
+            var packageInfo = new PackageInfo(package, fileService.GetDowloadLinkFormat());
+
+            return Redirect(packageInfo.DownloadLink);
         }
     }
 }

@@ -7,9 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SPM.Http.PackageService.Service;
 
-namespace SPM.Http.PackageService
+namespace SPM.Http.SelfUpdateHost
 {
     public class Startup
     {
@@ -28,11 +27,17 @@ namespace SPM.Http.PackageService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient(p => new FileService(Configuration["FileService"]));
-            services.AddTransient(p => new Service.PackageService(Configuration["StorageConnectionString"]));
-
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(ops =>
+            {
+                ops.InputFormatters.Add(new CUrlFileTransferFormatter());
+            });
+            services.AddOptions();
+
+            services.Configure<Config>(Configuration);
+
+            services.AddTransient<StoreService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,8 +45,31 @@ namespace SPM.Http.PackageService
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
-            app.UseMvc();
+            app.UseStaticFiles();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
+    }
+
+    public class Config
+    {
+        public string ServerDigest { get; set; }
+        public string FileServiceUrl { get; set; }
+        public string StorageConnectionString { get; set; }
     }
 }

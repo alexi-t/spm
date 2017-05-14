@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TechSmith.Hyde.Table;
 using TechSmith.Hyde;
+using TechSmith.Hyde.Common;
 
 namespace SPM.Http.PackageService.Service
 {
@@ -28,7 +29,14 @@ namespace SPM.Http.PackageService.Service
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
-            return await tableStorage.GetAsync<Package>(PackagesTableName, name, tag);
+            try
+            {
+                return await tableStorage.GetAsync<Package>(PackagesTableName, name, tag);
+            }
+            catch (EntityDoesNotExistException)
+            {
+                return null;
+            }
         }
 
         public async Task<List<string>> GetPackageTagsAsync(string packageName, int count)

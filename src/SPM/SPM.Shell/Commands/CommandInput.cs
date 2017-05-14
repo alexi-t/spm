@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SPM.Shell.Commands.Upgrade
+namespace SPM.Shell.Commands
 {
-    public class NewPackage
+    public class CommandInput
     {
-        public string Version { get; set; }
-
         public string Name { get; set; }
-
-        public string PackageUrl { get; set; }
+        public int Index { get; set; }
+        public bool Required { get; set; }
     }
 }

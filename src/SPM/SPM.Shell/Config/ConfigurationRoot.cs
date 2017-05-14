@@ -12,7 +12,8 @@ namespace SPM.Shell.Config
         public ConfigurationRoot() { }
         public ConfigurationRoot(List<CofigurationPackageDescription> packages)
         {
-            this.Packages = packages.ToDictionary(d => d.Name);
+            if (packages != null)
+                this.Packages = packages.ToDictionary(d => d.Name);
         }
 
         [JsonProperty("packages")]
