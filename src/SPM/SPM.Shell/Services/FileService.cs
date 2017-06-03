@@ -16,9 +16,9 @@ namespace SPM.Shell.Services
         private const string SPMFolderName = "SPM";
         private const string CacheFolderName = "Cache";
 
-        public string[] SearchWorkingDirectory(string filter)
+        public string[] SearchWorkingDirectory(string filter = null)
         {
-            return Directory.GetFiles(".", filter, SearchOption.TopDirectoryOnly);
+            return Directory.GetFiles(".", filter ?? "*", SearchOption.TopDirectoryOnly);
         }
 
         public string ReadFile(string path)
@@ -54,7 +54,7 @@ namespace SPM.Shell.Services
 
             return currentPath;
         }
-        
+
         public bool IsPackageExistInCache(string name, string tag)
         {
             string packagesCacheFolder = EnsureLocalDataPath("cache");
@@ -69,7 +69,7 @@ namespace SPM.Shell.Services
 
             return true;
         }
-        
+
 
         public void SavePackageInCache(string packageName, string packageTag, byte[] packagePayload)
         {

@@ -1,4 +1,5 @@
-﻿using SPM.Shell.Config;
+﻿using SPM.Shell.Commands.Base;
+using SPM.Shell.Config;
 using SPM.Shell.Services;
 using System;
 using System.Collections.Generic;

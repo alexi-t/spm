@@ -5,5 +5,6 @@
         void AddMessage(string message, bool appendNewline = true);
         string RequestValue(string message = null, bool appenNewline = false);
         void DisplayProgress(float progress);
+        bool Ask(string question, bool? deafultAnswer = null);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SPM.Shell.Services;
+using System;
 using System.Linq;
 
 namespace SPM.Shell
@@ -8,6 +9,10 @@ namespace SPM.Shell
 
         public static int Main(params string[] args)
         {
+#if DEBUG
+            args = Console.ReadLine().Split(' ');
+#endif
+
             var commandsFactory = new CommandsFactory();
             var commands = commandsFactory.GetCommandBindings();
 

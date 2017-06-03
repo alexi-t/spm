@@ -5,14 +5,10 @@ namespace SPM.Shell.Services
 {
     public interface IConfigService
     {
-        ConfigurationRoot GetConfig();
+        PackageConfiguration GetConfig();
         
-        void CreateConfig(List<CofigurationPackageDescription> initialPackages = null);
+        void CreateConfig(string name, string[] excludes);
 
-        bool IsConfigExist();
-
-        List<string> GetAllPackageNames();
-
-        void SetPackageTag(string packageName, string tag);
+        void SetTag(string tag, string hash);
     }
 }

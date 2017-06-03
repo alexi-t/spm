@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SPM.Shell.Commands
+namespace SPM.Shell.Commands.Base
 {
     public class CommandInput
     {

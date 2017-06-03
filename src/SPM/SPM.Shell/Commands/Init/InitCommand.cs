@@ -1,4 +1,5 @@
-﻿using SPM.Shell.Config;
+﻿using SPM.Shell.Commands.Base;
+using SPM.Shell.Config;
 using SPM.Shell.Services;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,10 @@ namespace SPM.Shell.Commands.Init
         private readonly IFileService fileService;
         private readonly IUIService uiService;
 
-        public InitCommand(IConfigService configService, IFileService fileService, IUIService uiService) : base("init")
+        private static CommandModifier implicitIncludeModifier = new CommandModifier("implicitInclude");
+
+        public InitCommand(IConfigService configService, IFileService fileService, IUIService uiService) 
+            : base("init", modifiers: new[] { implicitIncludeModifier })
         {
             this.configService = configService;
             this.fileService = fileService;
@@ -24,28 +28,33 @@ namespace SPM.Shell.Commands.Init
 
         protected async override Task RunCommandAsync()
         {
-            var wspFiles = fileService.SearchWorkingDirectory("*.wsp");
+            bool implicitInclude = HasModifier(implicitIncludeModifier);
 
-            var packagesConfigurationList = new List<CofigurationPackageDescription>();
-            foreach (var file in wspFiles)
+            var allFiles = fileService.SearchWorkingDirectory();
+
+            string packageName = uiService.RequestValue($"Enter package name: ");
+
+            uiService.AddMessage("Package files:");
+
+            var excludes = new List<string>();
+
+            foreach (var file in allFiles)
             {
                 string fileName = Path.GetFileName(file);
-                string defaultPackageName = Path.GetFileNameWithoutExtension(file);
-
-                string name = uiService.RequestValue($"Enter name for wsp file {fileName} (default ${defaultPackageName}): ");
-                if (string.IsNullOrEmpty(name))
-                    name = defaultPackageName;
-
-                var packageConfig = new CofigurationPackageDescription
+                if (implicitInclude)
                 {
-                    Name = name,
-                    FileName = Path.GetFileName(file)
-                };
-
-                packagesConfigurationList.Add(packageConfig);
+                    if (!uiService.Ask($"Include {fileName}?"))
+                    {
+                        excludes.Add(fileName);
+                    }
+                }
+                else
+                {
+                    uiService.AddMessage(fileName);
+                }
             }
 
-            configService.CreateConfig(packagesConfigurationList);
+            configService.CreateConfig(packageName, excludes.ToArray());
         }
     }
 }

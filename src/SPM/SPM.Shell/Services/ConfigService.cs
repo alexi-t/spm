@@ -25,14 +25,18 @@ namespace SPM.Shell.Services
             return fileService.IsFileExist(CONFIG_FILE_NAME);
         }
 
-        public void CreateConfig(List<CofigurationPackageDescription> initialPackages = null)
+        public void CreateConfig(string name, string[] excludes)
         {
-            var root = new ConfigurationRoot(initialPackages);                
+            var root = new PackageConfiguration
+            {
+                Name = name,
+                ExcludePaths = excludes
+            };
 
             WriteConfig(root);
         }
 
-        public ConfigurationRoot GetConfig()
+        public PackageConfiguration GetConfig()
         {
             try
             {
@@ -44,25 +48,16 @@ namespace SPM.Shell.Services
             }
         }
 
-        private void WriteConfig(ConfigurationRoot config) => fileService.WriteFile(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config, Formatting.Indented));
+        private void WriteConfig(PackageConfiguration config) => fileService.WriteFile(CONFIG_FILE_NAME, JsonConvert.SerializeObject(config, Formatting.Indented));
 
-        private ConfigurationRoot ReadConfig() => JsonConvert.DeserializeObject<ConfigurationRoot>(fileService.ReadFile(CONFIG_FILE_NAME));
-
-        public List<string> GetAllPackageNames()
+        private PackageConfiguration ReadConfig() => JsonConvert.DeserializeObject<PackageConfiguration>(fileService.ReadFile(CONFIG_FILE_NAME));
+        
+        public void SetTag(string tag, string hash)
         {
-            ConfigurationRoot root = GetConfig();
+            PackageConfiguration root = ReadConfig();
 
-            return root.Packages.Keys.ToList();
-        }
-
-        public void SetPackageTag(string packageName, string tag)
-        {
-            ConfigurationRoot root = ReadConfig();
-
-            if (root.Packages.ContainsKey(packageName))
-                root.Packages[packageName].Tag = tag;
-            else
-                throw new InvalidOperationException($"Can not find package with name {packageName}");
+            root.Tag = tag;
+            root.Hash = hash;
 
             WriteConfig(root);
         }

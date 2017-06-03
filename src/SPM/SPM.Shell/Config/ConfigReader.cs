@@ -13,14 +13,14 @@ namespace SPM.Shell.Config
     {
         private const string ConfigFileName = "sppackages.json";
 
-        public static ConfigurationRoot ReadFromWorkingDirectory()
+        public static PackageConfiguration ReadFromWorkingDirectory()
         {
             if (!File.Exists(ConfigFileName))
                 throw new ConfigFileNotFoundException();
 
             var configJson = File.ReadAllText(ConfigFileName);
 
-            return JsonConvert.DeserializeObject<ConfigurationRoot>(configJson);
+            return JsonConvert.DeserializeObject<PackageConfiguration>(configJson);
         }
 
         internal static void UpdatePackageConfig(string packageName, CofigurationPackageDescription packageConfig)
@@ -39,7 +39,7 @@ namespace SPM.Shell.Config
 
         internal static void CreateConfigFile(List<CofigurationPackageDescription> configList)
         {
-            var root = new ConfigurationRoot(configList);
+            var root = new PackageConfiguration(configList);
 
             var configJson = JsonConvert.SerializeObject(root, Formatting.Indented);
 

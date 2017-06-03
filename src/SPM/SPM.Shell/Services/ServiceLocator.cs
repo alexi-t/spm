@@ -2,6 +2,7 @@
 using Autofac.Features.ResolveAnything;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace SPM.Shell.Services
 
         public ServiceLocator()
         {
+            string packagesServiceUrl = ConfigurationManager.AppSettings["packagesServiceUrl"];
+
             var builder = new ContainerBuilder();
 
             builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
@@ -21,7 +24,7 @@ namespace SPM.Shell.Services
             builder.RegisterType<UIService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<FileService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ConfigService>().AsImplementedInterfaces().SingleInstance();
-            builder.Register(ctx => new PackagesService("http://localhost:5001/packages")).AsImplementedInterfaces().SingleInstance();
+            builder.Register(ctx => new PackagesService(packagesServiceUrl)).AsImplementedInterfaces().SingleInstance();
 
             this.container = builder.Build();
         }

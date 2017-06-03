@@ -7,7 +7,7 @@ namespace SPM.Shell.Services
     {
         bool IsFileExist(string path);
         string ReadFile(string path);
-        string[] SearchWorkingDirectory(string filter);
+        string[] SearchWorkingDirectory(string filter = null);
         void WriteFile(string path, string content);
         Stream ReadFileAsStream(string packageName);
         bool IsPackageExistInCache(string packageName, string packageTag);

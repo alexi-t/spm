@@ -25,6 +25,26 @@ namespace SPM.Shell.Services
                 Console.Write(message);
         }
 
+        public bool Ask(string question, bool? deafultAnswer = null)
+        {
+            start: Console.Write(question + " (y/n)");
+            string answer = Console.ReadLine();
+            switch (answer)
+            {
+                case "y":
+                case "Y":
+                    return true;
+                case "n":
+                case "N":
+                    return false;
+                default:
+                    if (deafultAnswer != null)
+                        return deafultAnswer.GetValueOrDefault();
+                    else
+                        goto start;
+            }
+        }
+
         public void DisplayProgress(float progress)
         {
             int progressInt = (int)(progress * .5);
