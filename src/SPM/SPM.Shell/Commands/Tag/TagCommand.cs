@@ -11,54 +11,22 @@ namespace SPM.Shell.Commands.Tag
 {
     public class TagCommand : BaseCommand
     {
-        private static CommandInput packageNameInput =
-            new CommandInput
-            {
-                Name = "package",
-                Index = 0,
-                Required = false
-            };
-
         private static CommandInput tagNameInput =
             new CommandInput
             {
                 Name = "tag",
-                Index = 1,
+                Index = 0,
                 Required = false
             };
-
-        private static CommandInput[] commandInput = new[] { packageNameInput, tagNameInput };
-
+        
         private readonly IConfigService configService;
+        private readonly IFileService fileService;
 
-        public TagCommand(IConfigService configService) : base("tag", inputs: commandInput)
+        public TagCommand(IConfigService configService, IFileService fileService) 
+            : base("tag", inputs: new[] { tagNameInput })
         {
             this.configService = configService;
-        }
-
-        private string GetPackageName()
-        {
-            List<string> packageNames = configService.GetAllPackageNames();
-
-            string providedName = GetCommandInputValue(packageNameInput);
-
-            if (string.IsNullOrEmpty(providedName))
-            {
-                if (packageNames.Count() == 1)
-                {
-                    return packageNames.First();
-                }
-            }
-            else if (packageNames.Contains(providedName))
-            {
-                return providedName;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Package with name {providedName} not found");
-            }
-
-            throw new InvalidOperationException("Package not provided");
+            this.fileService = fileService;
         }
 
         private string GetTagName()
@@ -75,10 +43,13 @@ namespace SPM.Shell.Commands.Tag
 
         protected override Task RunCommandAsync()
         {
-            string packageName = GetPackageName();
+            PackageConfiguration config = configService.GetConfig();
+
             string tag = GetTagName();
 
-            configService.SetPackageTag(packageName, tag);
+            string hash = fileService.ComputeHash(config.ExcludePaths);
+
+            configService.SetTag(tag, hash);
 
             return Task.FromResult(0);
         }

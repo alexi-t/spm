@@ -1,4 +1,5 @@
 ﻿using SPM.Shell.Commands;
+using SPM.Shell.Commands.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;

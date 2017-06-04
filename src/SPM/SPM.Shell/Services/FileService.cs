@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,9 +18,16 @@ namespace SPM.Shell.Services
         private const string SPMFolderName = "SPM";
         private const string CacheFolderName = "Cache";
 
+        private readonly IUIService uiService;
+
+        public FileService(IUIService uiService)
+        {
+            this.uiService = uiService;
+        }
+
         public string[] SearchWorkingDirectory(string filter = null)
         {
-            return Directory.GetFiles(".", filter ?? "*", SearchOption.TopDirectoryOnly);
+            return Directory.GetFiles(".", filter ?? "*", SearchOption.TopDirectoryOnly).Where(f => Path.GetFileName(f) != "packages.json").ToArray();
         }
 
         public string ReadFile(string path)
@@ -83,6 +92,63 @@ namespace SPM.Shell.Services
             foreach (var packageFile in Directory.GetFiles(EnsureLocalDataPath(CacheFolderName, packageName, packageTag)))
             {
                 File.Copy(packageFile, Path.GetFileName(packageFile), true);
+            }
+        }
+
+        public string ComputeHash(string[] excludes)
+        {
+            string[] allFiles = SearchWorkingDirectory().OrderBy(f => f).ToArray();
+
+            SHA1 sha1 = SHA1.Create();
+
+            DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            byte[] aggreagate = new byte[0];
+
+            foreach (string filePath in allFiles)
+            {
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                double milliseconds = (lastWriteTime - unixEpoch).TotalMilliseconds;
+                byte[] dateBytes = BitConverter.GetBytes(milliseconds);
+                aggreagate = sha1.ComputeHash(aggreagate.Union(dateBytes).ToArray());
+            }
+
+            return string.Join("", aggreagate.Select(b => b.ToString("x2")));
+        }
+
+        public async Task<byte[]> CreatePackageAsync(string[] excludePaths)
+        {
+            string[] allFiles = SearchWorkingDirectory().OrderBy(f => f).ToArray();
+
+            using (var ms = new MemoryStream())
+            {
+                ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create);
+
+                string workingDirectory = Environment.CurrentDirectory;
+
+                float index = 0;
+                int totalFilesCount = allFiles.Count();
+
+                uiService.AddMessage("Creating package...");
+
+                foreach (string filePath in allFiles)
+                {
+                    string fileRelativePath = filePath.Replace(workingDirectory, "");
+
+                    ZipArchiveEntry fileEntry = archive.CreateEntry(fileRelativePath, CompressionLevel.Optimal);
+
+                    using (FileStream fileStream = File.OpenRead(filePath))
+                    using (Stream entryStream = fileEntry.Open())
+                    {
+                        await fileStream.CopyToAsync(entryStream);
+                    }
+
+                    uiService.DisplayProgress(++index * 100 / totalFilesCount);
+                }
+
+                await ms.FlushAsync();
+
+                return ms.ToArray();
             }
         }
     }

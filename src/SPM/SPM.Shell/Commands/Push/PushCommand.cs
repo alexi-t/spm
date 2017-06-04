@@ -12,20 +12,14 @@ namespace SPM.Shell.Commands.Push
 {
     public class PushCommand : BaseCommand
     {
-        private static CommandInput packageNameInput = new CommandInput
-        {
-            Name = "packageName",
-            Index = 0,
-            Required = false
-        };
-
-        private static CommandInput[] inputs = new[] { packageNameInput };
-
+        private static CommandModifier autoTagModifier = new CommandModifier("autoTag");
+        
         private readonly IConfigService configService;
         private readonly IPackagesService packagesService;
         private readonly IFileService fileService;
 
-        public PushCommand(IConfigService configService, IPackagesService packagesService, IFileService fileService) : base("push", inputs)
+        public PushCommand(IConfigService configService, IPackagesService packagesService, IFileService fileService) 
+            : base("push", modifiers: new[] { autoTagModifier })
         {
             this.configService = configService;
             this.packagesService = packagesService;
@@ -34,22 +28,19 @@ namespace SPM.Shell.Commands.Push
 
         protected override async Task RunCommandAsync()
         {
-            string providedPackageName = GetCommandInputValue(packageNameInput);
+            PackageConfiguration config = configService.GetConfig();
 
-            List<CofigurationPackageDescription> availablePackages = configService.GetConfig().Packages.Select(p => p.Value).ToList();
+            if (string.IsNullOrEmpty(config.Hash) || string.IsNullOrEmpty(config.Tag))
+                throw new InvalidOperationException("Can not push until tag complete");
 
-            if (!string.IsNullOrEmpty(providedPackageName) &&
-                !availablePackages.Any(p => p.Name == providedPackageName))
-                throw new ArgumentOutOfRangeException();
+            string currentHash = fileService.ComputeHash(config.ExcludePaths);
 
-            List<CofigurationPackageDescription> packagesToPush = !string.IsNullOrEmpty(providedPackageName) ?
-                availablePackages.Where(p => p.Name == providedPackageName).ToList() :
-                availablePackages;
+            if (currentHash != config.Hash)
+                throw new InvalidOperationException("Files had changed, rerun tag command");
 
-            foreach (var package in packagesToPush)
+            using (Stream packageStream = new MemoryStream(await fileService.CreatePackageAsync(config.ExcludePaths)))
             {
-                using (Stream fileStream = fileService.ReadFileAsStream(package.FileName))
-                    await this.packagesService.UploadPackageAsync($"{package.Name}@{package.Tag}", fileStream);
+                await packagesService.UploadPackageAsync(config.Name, packageStream);
             }
         }
     }

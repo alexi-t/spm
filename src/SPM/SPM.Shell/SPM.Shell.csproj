@@ -48,6 +48,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,7 +67,6 @@
     <Compile Include="Commands\Push\PushCommand.cs" />
     <Compile Include="Commands\Tag\TagCommand.cs" />
     <Compile Include="Config\CofigurationPackageDescription.cs" />
-    <Compile Include="Config\ConfigReader.cs" />
     <Compile Include="Config\PackageConfiguration.cs" />
     <Compile Include="Exceptions\ConfigFileNotFoundException.cs" />
     <Compile Include="Services\CommandsFactory.cs" />
