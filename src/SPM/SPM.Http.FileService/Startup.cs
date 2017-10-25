@@ -30,6 +30,8 @@ namespace SPM.Http.FileService
             services.AddTransient(c => new Services.CloudBlobService(Configuration["AzureStorageKey"]));
             // Add framework services.
             services.AddMvc();
+
+            services.AddApplicationInsightsTelemetry(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,7 +39,7 @@ namespace SPM.Http.FileService
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
+            
             app.UseMvc();
         }
     }

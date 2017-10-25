@@ -1,19 +1,24 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace SPM.Shell.Services
 {
     public interface IFileService
     {
+        string ReadFileAsText(string path);
+        byte[] ReadFileAsByteArray(string path);
+        Stream ReadFileAsStream(string path);
+
+        void WriteText(string path, string content);
+        void WriteByteData(string path, byte[] content);
+        void WriteStream(string path, Stream content);
+
         bool IsFileExist(string path);
-        string ReadFile(string path);
-        void WriteFile(string path, string content);
-        string[] SearchWorkingDirectory(string filter = null);
-        Stream ReadFileAsStream(string packageName);
-        bool IsPackageExistInCache(string packageName, string packageTag);
-        void SavePackageInCache(string packageName, string packageTag, byte[] packagePayload);
-        void ExtractPackageFromCache(string packageName, string packageTag);
-        string ComputeHash(string[] excludePaths);
-        Task<byte[]> CreatePackageAsync(string[] excludePaths);
+
+        List<string> ListFilesInDirectory(string directory);
+        Task<byte[]> ZipFiles(List<string> packageFiles);
+        void ClearWorkingDirectory();
+        void Unzip(string packageZipPath);
     }
 }

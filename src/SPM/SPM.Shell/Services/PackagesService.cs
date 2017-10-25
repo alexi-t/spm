@@ -12,28 +12,38 @@ namespace SPM.Shell.Services
 {
     public class PackagesService : IPackagesService
     {
+        private readonly IUIService uiService;
         private readonly HttpClient httpClient;
 
-        public PackagesService(string packageServiceUrl)
+        public PackagesService(string packageServiceUrl, IUIService uiService)
         {
+            this.uiService = uiService;
             this.httpClient = new HttpClient()
             {
-                BaseAddress = new Uri(packageServiceUrl)
+                BaseAddress = new Uri(packageServiceUrl),
+                Timeout = TimeSpan.FromHours(1)
             };
         }
 
-        public async Task UploadPackageAsync(string name, Stream fileStream)
+        public async Task PushPackageAsync(string name, byte[] packageData)
         {
             var content = new MultipartFormDataContent
             {
                 { new StringContent(name), "name" },
-                { new StreamContent(fileStream), "packageFile", "package.wsp" }
+                { new ByteArrayContent(packageData), "packageFile", "package.zip" }
             };
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                Content = content
+                Content = new ProgressableStreamContent(content, (long uploaded, long size) =>
+                {
+                    uiService.DisplayProgress((float)uploaded * 100 / size);
+                })
             };
+
+            request.Headers.TransferEncodingChunked = true;
+
+            uiService.AddMessage("Uploading package...");
 
             var response = await httpClient.SendAsync(request);
 
@@ -46,6 +56,7 @@ namespace SPM.Shell.Services
             else
                 throw new InvalidOperationException(responseContent);
         }
+        
 
         public async Task<PackageInfo> SearchPackageAsync(string name)
         {
@@ -95,5 +106,6 @@ namespace SPM.Shell.Services
 
             return new HttpOperationWithProgress(httpClient, request);
         }
+        
     }
 }

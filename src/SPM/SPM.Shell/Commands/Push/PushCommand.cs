@@ -16,13 +16,15 @@ namespace SPM.Shell.Commands.Push
         
         private readonly IConfigService configService;
         private readonly IPackagesService packagesService;
+        private readonly IHashService hashService;
         private readonly IFileService fileService;
 
-        public PushCommand(IConfigService configService, IPackagesService packagesService, IFileService fileService) 
+        public PushCommand(IConfigService configService, IPackagesService packagesService, IHashService hashService, IFileService fileService) 
             : base("push", modifiers: new[] { autoTagModifier })
         {
             this.configService = configService;
             this.packagesService = packagesService;
+            this.hashService = hashService;
             this.fileService = fileService;
         }
 
@@ -33,15 +35,13 @@ namespace SPM.Shell.Commands.Push
             if (string.IsNullOrEmpty(config.Hash) || string.IsNullOrEmpty(config.Tag))
                 throw new InvalidOperationException("Can not push until tag complete");
 
-            string currentHash = fileService.ComputeHash(config.ExcludePaths);
+            List<string> packageFiles = configService.GetCurrentFilesList();
+            string currentHash = hashService.ComputeFilesHash(packageFiles);
 
             if (currentHash != config.Hash)
                 throw new InvalidOperationException("Files had changed, rerun tag command");
 
-            using (Stream packageStream = new MemoryStream(await fileService.CreatePackageAsync(config.ExcludePaths)))
-            {
-                await packagesService.UploadPackageAsync(config.Name, packageStream);
-            }
+            await packagesService.PushPackageAsync($"{config.Name}@{config.Tag}", await fileService.ZipFiles(packageFiles));
         }
     }
 }

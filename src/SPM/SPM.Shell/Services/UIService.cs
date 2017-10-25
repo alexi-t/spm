@@ -50,6 +50,8 @@ namespace SPM.Shell.Services
             int progressInt = (int)(progress * .5);
             Console.Write("\r");
             Console.Write($"[{new string('.', progressInt).PadRight(50)}]");
+            if (progressInt == 50)
+                Console.WriteLine();
         }
 
         public string RequestValue(string message = null, bool appenNewline = false)

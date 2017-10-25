@@ -14,112 +14,47 @@ namespace SPM.Shell.Services
 {
     public class FileService : IFileService
     {
-        private readonly string localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
-        private const string SPMFolderName = "SPM";
-        private const string CacheFolderName = "Cache";
-
         private readonly IUIService uiService;
 
         public FileService(IUIService uiService)
         {
             this.uiService = uiService;
         }
+        
+        public bool IsFileExist(string path) => File.Exists(path);
 
-        public string[] SearchWorkingDirectory(string filter = null)
-        {
-            return Directory.GetFiles(".", filter ?? "*", SearchOption.TopDirectoryOnly).Where(f => Path.GetFileName(f) != "packages.json").ToArray();
-        }
+        public string ReadFile(string path) => File.ReadAllText(path);
+        public Stream ReadFileAsStream(string fileName) => File.OpenRead(fileName);
+        public string ReadFileAsText(string path) => File.ReadAllText(path);
+        public byte[] ReadFileAsByteArray(string path) => File.ReadAllBytes(path);
 
-        public string ReadFile(string path)
-        {
-            return File.ReadAllText(path);
-        }
+        public void WriteFile(string path, string content) => File.WriteAllText(path, content);
+        public void WriteText(string path, string content) => File.WriteAllText(path, content);
+        public void WriteByteData(string path, byte[] content) => File.WriteAllBytes(path, content);
 
-        public void WriteFile(string path, string content)
+        public void WriteStream(string path, Stream content)
         {
-            File.WriteAllText(path, content);
-        }
-
-        public bool IsFileExist(string path)
-        {
-            return File.Exists(path);
-        }
-
-        public Stream ReadFileAsStream(string fileName)
-        {
-            return File.OpenRead(fileName);
-        }
-
-        private string EnsureLocalDataPath(params string[] folders)
-        {
-            string currentPath = localAppDataFolder;
-            foreach (string folderName in new[] { SPMFolderName }.Union(folders))
+            const int bufferSize = 1024 * 1024;
+            using (var fs = File.OpenWrite(path))
             {
-                string folderPath = Path.Combine(currentPath, folderName);
-                if (!Directory.Exists(folderPath))
-                    Directory.CreateDirectory(folderPath);
-                currentPath = folderPath;
-            }
-
-            return currentPath;
-        }
-
-        public bool IsPackageExistInCache(string name, string tag)
-        {
-            string packagesCacheFolder = EnsureLocalDataPath("cache");
-
-            string packageCacheFolderPath = Path.Combine(packagesCacheFolder, name);
-            if (!Directory.Exists(packageCacheFolderPath))
-                return false;
-
-            string packageVersionFolderPath = Path.Combine(packagesCacheFolder, tag);
-            if (!Directory.Exists(packageVersionFolderPath))
-                return false;
-
-            return true;
-        }
-
-
-        public void SavePackageInCache(string packageName, string packageTag, byte[] packagePayload)
-        {
-            string packageCachePath = EnsureLocalDataPath(CacheFolderName, packageName, packageTag);
-            string packagePath = Path.Combine(packageCachePath, $"{packageName}.wsp");
-            File.WriteAllBytes(packagePath, packagePayload);
-        }
-
-        public void ExtractPackageFromCache(string packageName, string packageTag)
-        {
-            foreach (var packageFile in Directory.GetFiles(EnsureLocalDataPath(CacheFolderName, packageName, packageTag)))
-            {
-                File.Copy(packageFile, Path.GetFileName(packageFile), true);
+                byte[] buffer = new byte[bufferSize];
+                while (true)
+                {
+                    int bytesRead = content.Read(buffer, 0, buffer.Length);
+                    if (bytesRead == 0)
+                        break;
+                    fs.Write(buffer, 0, bytesRead);
+                }
             }
         }
 
-        public string ComputeHash(string[] excludes)
+        public List<string> ListFilesInDirectory(string directory)
         {
-            string[] allFiles = SearchWorkingDirectory().OrderBy(f => f).ToArray();
-
-            SHA1 sha1 = SHA1.Create();
-
-            DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-            byte[] aggreagate = new byte[0];
-
-            foreach (string filePath in allFiles)
-            {
-                DateTime lastWriteTime = File.GetLastWriteTimeUtc(filePath);
-                double milliseconds = (lastWriteTime - unixEpoch).TotalMilliseconds;
-                byte[] dateBytes = BitConverter.GetBytes(milliseconds);
-                aggreagate = sha1.ComputeHash(aggreagate.Union(dateBytes).ToArray());
-            }
-
-            return string.Join("", aggreagate.Select(b => b.ToString("x2")));
+            return Directory.GetFiles(directory).ToList();
         }
 
-        public async Task<byte[]> CreatePackageAsync(string[] excludePaths)
+        public async Task<byte[]> ZipFiles(List<string> packageFiles)
         {
-            string[] allFiles = SearchWorkingDirectory().OrderBy(f => f).ToArray();
-
             using (var ms = new MemoryStream())
             {
                 ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create);
@@ -127,11 +62,11 @@ namespace SPM.Shell.Services
                 string workingDirectory = Environment.CurrentDirectory;
 
                 float index = 0;
-                int totalFilesCount = allFiles.Count();
+                int totalFilesCount = packageFiles.Count();
 
                 uiService.AddMessage("Creating package...");
 
-                foreach (string filePath in allFiles)
+                foreach (string filePath in packageFiles)
                 {
                     string fileRelativePath = filePath.Replace(workingDirectory, "");
 
@@ -149,6 +84,30 @@ namespace SPM.Shell.Services
                 await ms.FlushAsync();
 
                 return ms.ToArray();
+            }
+        }
+
+        public void ClearWorkingDirectory()
+        {
+            List<string> filesList = ListFilesInDirectory(".");
+            foreach (var file in filesList)
+            {
+                string fileName = Path.GetFileName(file);
+                if (fileName == "packages.json" ||
+                    fileName == "package.json" ||
+                    fileName == "")
+                    continue;
+
+                File.Delete(file);
+            }
+        }
+
+        public void Unzip(string packageZipPath)
+        {
+            using (var fs = File.OpenRead(packageZipPath))
+            {
+                ZipArchive archive = new ZipArchive(fs, ZipArchiveMode.Read);
+                archive.ExtractToDirectory(".");
             }
         }
     }

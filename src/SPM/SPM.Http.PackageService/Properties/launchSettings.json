@@ -17,12 +17,11 @@
     },
     "SPM.Http.PackageService": {
       "commandName": "Project",
-      "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "production"
       },
-      "applicationUrl": "http://localhost:55840"
+      "applicationUrl": "http://localhost:80"
     }
   }
 }

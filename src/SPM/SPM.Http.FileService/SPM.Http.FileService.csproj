@@ -4,11 +4,14 @@
     <TargetFramework>net451</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+    <ApplicationInsightsResourceId>/subscriptions/3f76ce41-6d1d-41f2-8b90-a27087c9f6e9/resourcegroups/SPM/providers/microsoft.insights/components/spmfileservice</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/3f76ce41-6d1d-41f2-8b90-a27087c9f6e9/resourceGroups/SPM/providers/microsoft.insights/components/spmfileservice</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.0" />
@@ -22,5 +25,8 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.2" />
     <PackageReference Include="WindowsAzure.Storage" Version="8.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 </Project>

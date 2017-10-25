@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,10 +17,10 @@ namespace SPM.Shell.Commands.Init
         private readonly IFileService fileService;
         private readonly IUIService uiService;
 
-        private static CommandModifier implicitIncludeModifier = new CommandModifier("implicitInclude");
+        private static CommandModifier explicitIncludeModifier = new CommandModifier("explicitInclude");
 
         public InitCommand(IConfigService configService, IFileService fileService, IUIService uiService) 
-            : base("init", modifiers: new[] { implicitIncludeModifier })
+            : base("init", modifiers: new[] { explicitIncludeModifier })
         {
             this.configService = configService;
             this.fileService = fileService;
@@ -28,18 +29,28 @@ namespace SPM.Shell.Commands.Init
 
         protected async override Task RunCommandAsync()
         {
-            bool implicitInclude = HasModifier(implicitIncludeModifier);
+            string currentlyRunningAssemblyName = Assembly.GetExecutingAssembly().Location;
+            string currentlyRunningAssemblyConfig = currentlyRunningAssemblyName.Replace(".exe", ".exe.config");
 
-            var allFiles = fileService.SearchWorkingDirectory();
+            bool implicitInclude = HasModifier(explicitIncludeModifier);
+
+            var allFiles = fileService.ListFilesInDirectory(".");
 
             string packageName = uiService.RequestValue($"Enter package name: ");
 
             uiService.AddMessage("Package files:");
 
             var excludes = new List<string>();
-
+            
             foreach (var file in allFiles)
             {
+                if (file == currentlyRunningAssemblyName ||
+                    file == currentlyRunningAssemblyConfig)
+                {
+                    excludes.Add(file);
+                    continue;
+                }
+
                 string fileName = Path.GetFileName(file);
                 if (implicitInclude)
                 {
@@ -53,7 +64,7 @@ namespace SPM.Shell.Commands.Init
                     uiService.AddMessage(fileName);
                 }
             }
-
+            
             configService.CreateConfig(packageName, excludes.ToArray());
         }
     }

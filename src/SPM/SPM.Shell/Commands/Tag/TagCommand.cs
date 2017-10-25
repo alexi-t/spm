@@ -21,12 +21,14 @@ namespace SPM.Shell.Commands.Tag
         
         private readonly IConfigService configService;
         private readonly IFileService fileService;
+        private readonly IHashService hashService;
 
-        public TagCommand(IConfigService configService, IFileService fileService) 
+        public TagCommand(IConfigService configService, IFileService fileService, IHashService hashService) 
             : base("tag", inputs: new[] { tagNameInput })
         {
             this.configService = configService;
             this.fileService = fileService;
+            this.hashService = hashService;
         }
 
         private string GetTagName()
@@ -47,7 +49,7 @@ namespace SPM.Shell.Commands.Tag
 
             string tag = GetTagName();
 
-            string hash = fileService.ComputeHash(config.ExcludePaths);
+            string hash = hashService.ComputeFilesHash(configService.GetCurrentFilesList());
 
             configService.SetTag(tag, hash);
 

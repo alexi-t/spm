@@ -24,7 +24,9 @@ namespace SPM.Shell.Services
             builder.RegisterType<UIService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<FileService>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ConfigService>().AsImplementedInterfaces().SingleInstance();
-            builder.Register(ctx => new PackagesService(packagesServiceUrl)).AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<HashService>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<LocalStoreService>().AsImplementedInterfaces().SingleInstance();
+            builder.Register(ctx => new PackagesService(packagesServiceUrl, ctx.Resolve<IUIService>())).AsImplementedInterfaces().SingleInstance();
 
             this.container = builder.Build();
         }

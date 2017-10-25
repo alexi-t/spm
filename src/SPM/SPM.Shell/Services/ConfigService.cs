@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SPM.Shell.Config;
+using SPM.Shell.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,7 @@ namespace SPM.Shell.Services
 {
     public class ConfigService : IConfigService
     {
-        private const string CONFIG_FILE_NAME = "packages.json";
+        private const string CONFIG_FILE_NAME = "package.json";
 
         private readonly FileService fileService;
 
@@ -19,12 +20,7 @@ namespace SPM.Shell.Services
         {
             this.fileService = fileService;
         }
-
-        public bool IsConfigExist()
-        {
-            return fileService.IsFileExist(CONFIG_FILE_NAME);
-        }
-
+        
         public void CreateConfig(string name, string[] excludes)
         {
             var root = new PackageConfiguration
@@ -44,7 +40,7 @@ namespace SPM.Shell.Services
             }
             catch (FileNotFoundException)
             {
-                throw new ApplicationException("Config file not found");
+                throw new ConfigFileNotFoundException();
             }
         }
 
@@ -60,6 +56,12 @@ namespace SPM.Shell.Services
             root.Hash = hash;
 
             WriteConfig(root);
+        }
+
+        public List<string> GetCurrentFilesList()
+        {
+            PackageConfiguration config = ReadConfig();
+            return Directory.GetFiles(".").Except(config.ExcludePaths).Where(f => Path.GetFileName(f) != CONFIG_FILE_NAME).ToList();
         }
     }
 }

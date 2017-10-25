@@ -27,6 +27,7 @@ namespace SPM.Shell.Services.Model
         public async Task<HttpResponseMessage> GetOperationResultAsync()
         {
             HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            
             if (response.IsSuccessStatusCode)
             {
                 var contentLength = response.Content.Headers.ContentLength ?? 0;

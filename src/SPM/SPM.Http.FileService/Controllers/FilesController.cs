@@ -9,6 +9,8 @@ using System.Text;
 using System.IO;
 using Microsoft.WindowsAzure.Storage;
 using System.Net.Http.Headers;
+using IOFIle = System.IO.File;
+using Microsoft.ApplicationInsights;
 
 namespace SPM.Http.FileService.Controllers
 {
@@ -16,6 +18,7 @@ namespace SPM.Http.FileService.Controllers
     public class FilesController : Controller
     {
         private readonly Services.CloudBlobService cloudStorage;
+        private readonly TelemetryClient telemetry = new TelemetryClient();
 
         public FilesController(Services.CloudBlobService cloudStorage)
         {
@@ -31,18 +34,42 @@ namespace SPM.Http.FileService.Controllers
             if (data == null)
                 return BadRequest("Data is empty");
 
-            var hash = SHA256.Create();
-            var keyHash = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
-            var dataStream = data.OpenReadStream();
+            SHA256 hashFunction = SHA256.Create();
+            
+            string tempFileName = Path.GetTempFileName();
+            int bufferSize = 1024 * 1024;
+            
+            try
+            {
+                using (var dataStream = data.OpenReadStream())
+                using (var fs = IOFIle.OpenWrite(tempFileName))
+                {
+                    while (true)
+                    {
+                        byte[] buffer = new byte[bufferSize];
+                        int bytesRead = await dataStream.ReadAsync(buffer, 0, buffer.Length);
+                        if (bytesRead <= 0)
+                            break;
 
-            byte[] dataBytes = new byte[data.Length];
-            dataStream.Read(dataBytes, 0, (int)data.Length);
+                        await fs.WriteAsync(buffer, 0, bytesRead);
+                    }
+                }
+                using (var fs = IOFIle.OpenRead(tempFileName))
+                {
+                    byte[] fileHash = hashFunction.ComputeHash(fs);
 
-            var dataHash = hash.ComputeHash(dataBytes);
+                    fs.Position = 0;
 
-            await cloudStorage.SaveFileAsync(key, dataBytes);
+                    await cloudStorage.SaveFileAsync(key, fs);
 
-            return Ok(string.Join("", GetBytesHash(hash, dataBytes)));
+                    return Ok(string.Join("", fileHash.Select(b => b.ToString("X2"))));
+                }
+            }
+            finally
+            {
+                if (IOFIle.Exists(tempFileName))
+                    IOFIle.Delete(tempFileName);
+            }
         }
 
         [HttpGet("{key}/{fileHash}")]
@@ -62,11 +89,12 @@ namespace SPM.Http.FileService.Controllers
             }
             catch (StorageException)
             {
+                telemetry.TrackEvent($"File {key} not found in storage");
                 return NotFound();
             }
 
             var hashAlgorithm = SHA256.Create();
-            var fileDataHash = GetBytesHash(hashAlgorithm, fileData);
+            var fileDataHash = GetBytesHashAsString(hashAlgorithm, fileData);
 
             if (fileDataHash == fileHash)
             {
@@ -74,10 +102,12 @@ namespace SPM.Http.FileService.Controllers
                 return File(fileData, "application/octet-stream");
             }
 
+            telemetry.TrackEvent($"File {key} hash from storage {fileDataHash} does not match {fileHash}");
+
             return NotFound();
         }
 
-        private string GetBytesHash(HashAlgorithm algorithm, byte[] buffer)
+        private string GetBytesHashAsString(HashAlgorithm algorithm, byte[] buffer)
         {
             return string.Join("", algorithm.ComputeHash(buffer).Select(b => b.ToString("X2")));
         }

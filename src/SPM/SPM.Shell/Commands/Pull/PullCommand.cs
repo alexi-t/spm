@@ -21,13 +21,15 @@ namespace SPM.Shell.Commands.Pull
         private readonly IFileService fileService;
         private readonly IPackagesService packagesService;
         private readonly IUIService uiService;
+        private readonly ILocalStoreService localStoreService;
 
-        public PullCommand(IPackagesService packagesService, IFileService fileService, IUIService uiService) 
+        public PullCommand(IPackagesService packagesService, IFileService fileService, IUIService uiService, ILocalStoreService localStoreService) 
             : base("pull", inputs: new[] { packageNameInput })
         {
             this.packagesService = packagesService;
             this.fileService = fileService;
             this.uiService = uiService;
+            this.localStoreService = localStoreService;
         }
 
         protected async override Task RunCommandAsync()
@@ -44,7 +46,7 @@ namespace SPM.Shell.Commands.Pull
             string packageName = packageInfo.Name;
             string packageTag = packageInfo.Tag;
 
-            if (!fileService.IsPackageExistInCache(packageName, packageTag))
+            if (!localStoreService.PackageExist(packageName, packageTag))
             {
                 HttpOperationWithProgress downloadOperation = packagesService.DownloadPackage(packageName, packageTag);
 
@@ -54,11 +56,11 @@ namespace SPM.Shell.Commands.Pull
                 };
 
                 HttpResponseMessage response = await downloadOperation.GetOperationResultAsync();
-
-                fileService.SavePackageInCache(packageName, packageTag, await response.Content.ReadAsByteArrayAsync());
+                
+                localStoreService.SavePackage(packageName, packageTag, await response.Content.ReadAsByteArrayAsync());
             }
 
-            fileService.ExtractPackageFromCache(packageName, packageTag);
+            localStoreService.RestorePackage(packageName, packageTag);
         }
     }
 }
