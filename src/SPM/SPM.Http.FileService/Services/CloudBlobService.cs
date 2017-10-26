@@ -42,7 +42,7 @@ namespace SPM.Http.FileService.Services
             var operation = telemetryClient.StartOperation<RequestTelemetry>($"upload key {key}, hash: {hash}");
             
             CloudBlockBlob blockBlob = container.GetBlockBlobReference(hash);
-
+            
             int bufferSize = 4 * 1024 * 1024;
 
             int blockId = 0;

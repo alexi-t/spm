@@ -70,8 +70,6 @@ namespace SPM.Http.PackageService.Controllers
             string tag = nameAndTag.Substring(separatorIndex + 1);
 
             var package = await packageService.GetPackageByNameAndTagAsync(name, tag);
-            if (package != null)
-                return BadRequest("Package with same name and tag already exist!");
 
             if (packageFile == null)
                 return BadRequest("No package file provided");
@@ -86,7 +84,14 @@ namespace SPM.Http.PackageService.Controllers
 
             if (!string.IsNullOrEmpty(fileHash))
             {
-                return Ok(await packageService.AddPackageAsync(name, tag, fileHash));
+                if (package == null)
+                    return Ok(await packageService.AddPackageAsync(name, tag, fileHash));
+                else
+                {
+                    package.Hash = fileHash;
+                    await packageService.UpdatePackageAsync(package);
+                    return Ok(package);
+                }
             }
             return BadRequest("Internal error in file service.");
         }

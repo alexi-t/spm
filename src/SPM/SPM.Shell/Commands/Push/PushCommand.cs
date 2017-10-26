@@ -18,14 +18,16 @@ namespace SPM.Shell.Commands.Push
         private readonly IPackagesService packagesService;
         private readonly IHashService hashService;
         private readonly IFileService fileService;
+        private readonly IUIService uiService;
 
-        public PushCommand(IConfigService configService, IPackagesService packagesService, IHashService hashService, IFileService fileService) 
+        public PushCommand(IConfigService configService, IPackagesService packagesService, IHashService hashService, IFileService fileService, IUIService uiService) 
             : base("push", modifiers: new[] { autoTagModifier })
         {
             this.configService = configService;
             this.packagesService = packagesService;
             this.hashService = hashService;
             this.fileService = fileService;
+            this.uiService = uiService;
         }
 
         protected override async Task RunCommandAsync()
@@ -41,6 +43,8 @@ namespace SPM.Shell.Commands.Push
             if (currentHash != config.Hash)
                 throw new InvalidOperationException("Files had changed, rerun tag command");
 
+            uiService.AddMessage($"Pushing {config.Name}@{config.Tag}");
+            
             await packagesService.PushPackageAsync($"{config.Name}@{config.Tag}", await fileService.ZipFiles(packageFiles));
         }
     }

@@ -61,7 +61,7 @@ namespace SPM.Shell.Services
         public List<string> GetCurrentFilesList()
         {
             PackageConfiguration config = ReadConfig();
-            return Directory.GetFiles(".").Except(config.ExcludePaths).Where(f => Path.GetFileName(f) != CONFIG_FILE_NAME).ToList();
+            return Directory.GetFiles(Environment.CurrentDirectory).Except(config.ExcludePaths).Where(f => Path.GetFileName(f) != CONFIG_FILE_NAME).ToList();
         }
     }
 }

@@ -46,7 +46,7 @@ namespace SPM.Shell.Commands.Pull
             string packageName = packageInfo.Name;
             string packageTag = packageInfo.Tag;
 
-            if (!localStoreService.PackageExist(packageName, packageTag))
+            if (!localStoreService.PackageExist(packageInfo))
             {
                 HttpOperationWithProgress downloadOperation = packagesService.DownloadPackage(packageName, packageTag);
 
@@ -57,7 +57,7 @@ namespace SPM.Shell.Commands.Pull
 
                 HttpResponseMessage response = await downloadOperation.GetOperationResultAsync();
                 
-                localStoreService.SavePackage(packageName, packageTag, await response.Content.ReadAsByteArrayAsync());
+                localStoreService.SavePackage(packageInfo, await response.Content.ReadAsByteArrayAsync());
             }
 
             localStoreService.RestorePackage(packageName, packageTag);

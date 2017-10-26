@@ -38,12 +38,13 @@ namespace SPM.Shell.Services
         
         private List<CachedPackageInfo> GetAllCachedPackages()
             => JArray.Parse(File.ReadAllText(Path.Combine(localCacheFolder, dbFile))).ToObject<List<CachedPackageInfo>>();
-        private void AddCachedPackage(string name, string tag, string path)
+        private void AddCachedPackage(PackageInfo packageInfo, string path)
         {
             var info = new CachedPackageInfo
             {
-                Name = name,
-                Tag = tag,
+                Name = packageInfo.Name,
+                Tag = packageInfo.Tag,
+                Hash = packageInfo.Hash,
                 Path = path
             };
 
@@ -52,9 +53,9 @@ namespace SPM.Shell.Services
             File.WriteAllText(dbFilePath, JsonConvert.SerializeObject(allPackages));
         }
 
-        public bool PackageExist(string name, string tag)
+        public bool PackageExist(PackageInfo packageInfo)
         {
-            return GetAllCachedPackages().Any(p => p.Name == name && p.Tag == tag);
+            return GetAllCachedPackages().Any(p => p.Name == packageInfo.Name && p.Tag == packageInfo.Tag && p.Hash == packageInfo.Hash);
         }
 
         public void RestorePackage(string name, string tag)
@@ -69,13 +70,13 @@ namespace SPM.Shell.Services
             fileService.Unzip(cachedPackage.Path);
         }
 
-        public void SavePackage(string name, string tag, byte[] data)
+        public void SavePackage(PackageInfo packageInfo, byte[] data)
         {
-            if (PackageExist(name, tag))
+            if (PackageExist(packageInfo))
                 return;
 
-            string packageDirectoryPath = Path.Combine(localCacheFolder, name);
-            string tagDirectoryPath = Path.Combine(packageDirectoryPath, tag);
+            string packageDirectoryPath = Path.Combine(localCacheFolder, packageInfo.Name);
+            string tagDirectoryPath = Path.Combine(packageDirectoryPath, packageInfo.Tag);
             if (!Directory.Exists(packageDirectoryPath))
                 Directory.CreateDirectory(packageDirectoryPath);
             if (!Directory.Exists(tagDirectoryPath))
@@ -85,7 +86,7 @@ namespace SPM.Shell.Services
 
             File.WriteAllBytes(packageZipPath, data);
 
-            AddCachedPackage(name, tag, packageZipPath);
+            AddCachedPackage(packageInfo, packageZipPath);
         }
 
 

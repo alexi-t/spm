@@ -61,5 +61,12 @@ namespace SPM.Http.PackageService.Service
 
             return package;
         }
+
+        internal async Task UpdatePackageAsync(Package package)
+        {
+            var tableStorage = new AzureTableStorageProvider(storageAccount);
+            tableStorage.Update(PackagesTableName, package);
+            await tableStorage.SaveAsync();
+        }
     }
 }

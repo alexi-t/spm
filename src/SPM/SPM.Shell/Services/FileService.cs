@@ -20,7 +20,7 @@ namespace SPM.Shell.Services
         {
             this.uiService = uiService;
         }
-        
+
         public bool IsFileExist(string path) => File.Exists(path);
 
         public string ReadFile(string path) => File.ReadAllText(path);
@@ -55,36 +55,31 @@ namespace SPM.Shell.Services
 
         public async Task<byte[]> ZipFiles(List<string> packageFiles)
         {
-            using (var ms = new MemoryStream())
+            string tempDirectoryName = "~temp_archive_spm" + Guid.NewGuid();
+            string tempArchiveName = $"temp_archive{Guid.NewGuid()}.zip";
+
+            float index = 0;
+            int totalFilesCount = packageFiles.Count();
+
+            uiService.AddMessage("Creating package...");
+
+            var tempDirectory = Directory.CreateDirectory(tempDirectoryName);
+
+            foreach (string filePath in packageFiles)
             {
-                ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create);
+                File.Copy(filePath, Path.Combine(tempDirectory.FullName, Path.GetFileName(filePath)));
 
-                string workingDirectory = Environment.CurrentDirectory;
-
-                float index = 0;
-                int totalFilesCount = packageFiles.Count();
-
-                uiService.AddMessage("Creating package...");
-
-                foreach (string filePath in packageFiles)
-                {
-                    string fileRelativePath = filePath.Replace(workingDirectory, "");
-
-                    ZipArchiveEntry fileEntry = archive.CreateEntry(fileRelativePath, CompressionLevel.Optimal);
-
-                    using (FileStream fileStream = File.OpenRead(filePath))
-                    using (Stream entryStream = fileEntry.Open())
-                    {
-                        await fileStream.CopyToAsync(entryStream);
-                    }
-
-                    uiService.DisplayProgress(++index * 100 / totalFilesCount);
-                }
-
-                await ms.FlushAsync();
-
-                return ms.ToArray();
+                uiService.DisplayProgress(++index * 100 / totalFilesCount);
             }
+
+            ZipFile.CreateFromDirectory(tempDirectory.FullName, tempArchiveName);
+
+            byte[] data = File.ReadAllBytes(tempArchiveName);
+
+            File.Delete(tempArchiveName);
+            Directory.Delete(tempDirectory.FullName, true);
+
+            return data;
         }
 
         public void ClearWorkingDirectory()

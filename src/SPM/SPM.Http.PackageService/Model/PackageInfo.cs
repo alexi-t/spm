@@ -11,12 +11,14 @@ namespace SPM.Http.PackageService.Model
         {
             Name = package.Name;
             Tag = package.Tag;
+            Hash = package.Hash;
 
             DownloadLink = string.Format(downloadLinkFormat, Name + "@" + Tag, package.Hash);
         }
 
         public string Name { get; set; }
         public string Tag { get; set; }
+        public string Hash { get; set; }
         public string DownloadLink { get; set; }
     }
 }

@@ -11,5 +11,6 @@ namespace SPM.Shell.Services.Model
         public string Name { get; set; }
         public string Tag { get; set; }
         public string Path { get; set; }
+        public string Hash { get; set; }
     }
 }

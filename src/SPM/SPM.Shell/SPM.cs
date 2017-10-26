@@ -1,13 +1,14 @@
 ﻿using SPM.Shell.Services;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SPM.Shell
 {
-    public static class SPM
+    public class SPM
     {
 
-        public static int Main(params string[] args)
+        public static async Task<int> Main(string[] args)
         {
 #if DEBUG
             args = Console.ReadLine().Split(' ');
@@ -20,7 +21,20 @@ namespace SPM.Shell
             {
                 var commandName = args[0];
                 if (commands.ContainsKey(commandName))
-                    commands[commandName].RunAsync(args.Skip(1).ToArray()).Wait();
+                {
+                    try
+                    {
+                        await commands[commandName].RunAsync(args.Skip(1).ToArray());
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                else
+                {
+                    return 1;
+                }
             }
 
             return 0;

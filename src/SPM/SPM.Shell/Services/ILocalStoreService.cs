@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SPM.Shell.Services.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace SPM.Shell.Services
 {
     public interface ILocalStoreService
     {
-        bool PackageExist(string name, string tag);
+        bool PackageExist(PackageInfo packageInfo);
 
-        void SavePackage(string name, string tag, byte[] data);
+        void SavePackage(PackageInfo packageInfo, byte[] data);
 
         void RestorePackage(string name, string tag);
     }
