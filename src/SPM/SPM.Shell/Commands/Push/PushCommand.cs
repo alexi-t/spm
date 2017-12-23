@@ -15,12 +15,12 @@ namespace SPM.Shell.Commands.Push
         private static CommandModifier autoTagModifier = new CommandModifier("autoTag");
         
         private readonly IConfigService configService;
-        private readonly IPackagesService packagesService;
+        private readonly IOnlineStoreService packagesService;
         private readonly IHashService hashService;
         private readonly IFileService fileService;
         private readonly IUIService uiService;
 
-        public PushCommand(IConfigService configService, IPackagesService packagesService, IHashService hashService, IFileService fileService, IUIService uiService) 
+        public PushCommand(IConfigService configService, IOnlineStoreService packagesService, IHashService hashService, IFileService fileService, IUIService uiService) 
             : base("push", modifiers: new[] { autoTagModifier })
         {
             this.configService = configService;

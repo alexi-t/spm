@@ -19,11 +19,11 @@ namespace SPM.Shell.Commands.Pull
             Required = true
         };
         private readonly IFileService fileService;
-        private readonly IPackagesService packagesService;
+        private readonly IOnlineStoreService packagesService;
         private readonly IUIService uiService;
         private readonly ILocalStoreService localStoreService;
 
-        public PullCommand(IPackagesService packagesService, IFileService fileService, IUIService uiService, ILocalStoreService localStoreService) 
+        public PullCommand(IOnlineStoreService packagesService, IFileService fileService, IUIService uiService, ILocalStoreService localStoreService) 
             : base("pull", inputs: new[] { packageNameInput })
         {
             this.packagesService = packagesService;

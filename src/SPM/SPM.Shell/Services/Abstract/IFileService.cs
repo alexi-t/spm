@@ -17,7 +17,7 @@ namespace SPM.Shell.Services
         bool IsFileExist(string path);
 
         List<string> ListFilesInDirectory(string directory);
-        Task<byte[]> ZipFiles(List<string> packageFiles);
+        Task<byte[]> ZipFiles(IEnumerable<string> packageFiles);
         void ClearWorkingDirectory();
         void Unzip(string packageZipPath);
     }

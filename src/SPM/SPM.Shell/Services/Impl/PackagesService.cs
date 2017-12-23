@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SPM.Shell.Services
 {
-    public class PackagesService : IPackagesService
+    public class PackagesService : IOnlineStoreService
     {
         private readonly IUIService uiService;
         private readonly HttpClient httpClient;

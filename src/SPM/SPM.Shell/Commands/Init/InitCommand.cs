@@ -1,6 +1,7 @@
 ﻿using SPM.Shell.Commands.Base;
 using SPM.Shell.Config;
 using SPM.Shell.Services;
+using SPM.Shell.Services.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,58 +15,38 @@ namespace SPM.Shell.Commands.Init
     public class InitCommand : BaseCommand
     {
         private readonly IConfigService configService;
-        private readonly IFileService fileService;
         private readonly IUIService uiService;
+        private readonly IVersioningService versioningService;
+        private readonly IOnlineStoreService onlineStoreService;
+        private readonly IFileService fileService;
 
         private static CommandModifier explicitIncludeModifier = new CommandModifier("explicitInclude");
+        private static CommandArgument ignoreList = new CommandArgument("ignore", "i");
 
-        public InitCommand(IConfigService configService, IFileService fileService, IUIService uiService) 
-            : base("init", modifiers: new[] { explicitIncludeModifier })
+        public InitCommand(IVersioningService versioningService, IConfigService configService, IUIService uiService, IOnlineStoreService onlineStoreService, IFileService fileService) 
+            : base("init", 
+                  modifiers: new[] { explicitIncludeModifier },
+                  arguments: new[] { ignoreList })
         {
             this.configService = configService;
-            this.fileService = fileService;
             this.uiService = uiService;
+            this.versioningService = versioningService;
+            this.onlineStoreService = onlineStoreService;
+            this.fileService = fileService;
         }
 
         protected async override Task RunCommandAsync()
         {
-            string currentlyRunningAssemblyName = Assembly.GetExecutingAssembly().Location;
-            string currentlyRunningAssemblyConfig = currentlyRunningAssemblyName.Replace(".exe", ".exe.config");
+            bool explicitInclude = HasModifier(explicitIncludeModifier);
+            string ignoreSetup = GetArgumentValue(ignoreList);
 
-            bool implicitInclude = HasModifier(explicitIncludeModifier);
-
-            var allFiles = fileService.ListFilesInDirectory(".");
+            FolderVersionEntry version = await versioningService.CreateInitialVersion(explicitInclude, ignoreSetup.Split(','));
 
             string packageName = uiService.RequestValue($"Enter package name: ");
+                        
+            configService.CreateConfig(packageName, version.Hash);
 
-            uiService.AddMessage("Package files:");
-
-            var excludes = new List<string>();
-            
-            foreach (var file in allFiles)
-            {
-                if (file == currentlyRunningAssemblyName ||
-                    file == currentlyRunningAssemblyConfig)
-                {
-                    excludes.Add(file);
-                    continue;
-                }
-
-                string fileName = Path.GetFileName(file);
-                if (implicitInclude)
-                {
-                    if (!uiService.Ask($"Include {fileName}?"))
-                    {
-                        excludes.Add(fileName);
-                    }
-                }
-                else
-                {
-                    uiService.AddMessage(fileName);
-                }
-            }
-            
-            configService.CreateConfig(packageName, excludes.ToArray());
+            await onlineStoreService.PushPackageAsync($"{packageName}@initial", await fileService.ZipFiles(version.Files));
         }
     }
 }

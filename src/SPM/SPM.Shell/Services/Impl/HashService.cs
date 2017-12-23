@@ -18,9 +18,9 @@ namespace SPM.Shell.Services
             this.fileService = fileService;
         }
 
-        public string ComputeFilesHash(List<string> paths)
+        public string ComputeFilesHash(IEnumerable<string> paths)
         {
-            var hashesData = new byte[20 * paths.Count];
+            var hashesData = new byte[20 * paths.Count()];
             using (var ms = new MemoryStream(hashesData))
             {
                 foreach (var filePath in paths)

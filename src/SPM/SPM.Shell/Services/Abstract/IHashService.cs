@@ -8,6 +8,6 @@ namespace SPM.Shell.Services
 {
     public interface IHashService
     {
-        string ComputeFilesHash(List<string> paths);
+        string ComputeFilesHash(IEnumerable<string> paths);
     }
 }
