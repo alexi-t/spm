@@ -40,13 +40,13 @@ namespace SPM.Shell.Commands.Init
             bool explicitInclude = HasModifier(explicitIncludeModifier);
             string ignoreSetup = GetArgumentValue(ignoreList);
 
-            FolderVersionEntry version = await versioningService.CreateInitialVersion(explicitInclude, ignoreSetup.Split(','));
+            FolderVersionEntry version = await versioningService.CreateInitialVersion(explicitInclude, ignoreSetup.Split(',').Union(fileService.GetDefaultIgnore()));
 
             string packageName = uiService.RequestValue($"Enter package name: ");
                         
             configService.CreateConfig(packageName, version.Hash);
 
-            await onlineStoreService.PushPackageAsync($"{packageName}@initial", await fileService.ZipFiles(version.Files));
+            await onlineStoreService.PushPackageAsync($"{packageName}@initial", await fileService.ZipFiles(version.Files.Select(f => f.Path)));
         }
     }
 }

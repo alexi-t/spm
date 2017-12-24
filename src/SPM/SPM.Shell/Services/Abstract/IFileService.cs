@@ -20,5 +20,6 @@ namespace SPM.Shell.Services
         Task<byte[]> ZipFiles(IEnumerable<string> packageFiles);
         void ClearWorkingDirectory();
         void Unzip(string packageZipPath);
+        IEnumerable<string> GetDefaultIgnore();
     }
 }

@@ -12,7 +12,7 @@ namespace SPM.Shell.Services
 {
     public class ConfigService : IConfigService
     {
-        private const string CONFIG_FILE_NAME = "package.json";
+        private const string CONFIG_FILE_NAME = "spm.json";
 
         private readonly FileService fileService;
 
@@ -21,12 +21,12 @@ namespace SPM.Shell.Services
             this.fileService = fileService;
         }
         
-        public void CreateConfig(string name, string[] excludes)
+        public void CreateConfig(string name, string hash)
         {
             var root = new PackageConfiguration
             {
                 Name = name,
-                ExcludePaths = excludes
+                Hash = hash
             };
 
             WriteConfig(root);

@@ -83,6 +83,7 @@
     <Compile Include="Services\Abstract\IUIService.cs" />
     <Compile Include="Services\Impl\LocalStoreService.cs" />
     <Compile Include="Services\Impl\VersioningService.cs" />
+    <Compile Include="Services\Model\FileHistoryEntry.cs" />
     <Compile Include="Services\Model\FolderVersionEntry.cs" />
     <Compile Include="Services\Model\HttpProgress.cs" />
     <Compile Include="Services\Model\PackageDatabase.cs" />

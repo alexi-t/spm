@@ -53,15 +53,21 @@ namespace SPM.Shell.Services
         private void SaveHistory(FolderVersionEntry[] entries)
         {
             FolderVersionEntry[] currentHistory = ReadCurrentHistory();
-
-            File.WriteAllText(versionHistoryFileName, JsonConvert.SerializeObject(new { entries = currentHistory.Union(entries) }));
+            using (var fs = File.OpenWrite(versionHistoryFileName))
+            using (var sw = new StreamWriter(fs))
+            {
+                fs.Position = 0;
+                sw.Write(JsonConvert.SerializeObject(new { entries = currentHistory.Union(entries) }));
+            }
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task<string> CreateInitialVersion(bool explicitInclude, string[] ignore)
+        public async Task<FolderVersionEntry> CreateInitialVersion(bool explicitInclude, IEnumerable<string> ignore)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
+
+            FolderVersionEntry folderVersion = new FolderVersionEntry();
 
             List<string> resultFiles = new List<string>();
 
@@ -71,18 +77,21 @@ namespace SPM.Shell.Services
                 {
                     uiService.AddMessage($"Adding {filePath}...");
                     resultFiles.Add(filePath);
+                    folderVersion.AddEntry(filePath, hashService.ComputeFilesHash(new[] { filePath }), FileHistoryType.Added);
                 }
             }
 
-            string filesHash = hashService.ComputeFilesHash(resultFiles);
+            folderVersion.SetHash(hashService.ComputeFilesHash(resultFiles));
 
-            SaveHistory(new[] { new FolderVersionEntry(resultFiles, filesHash) });
+            SaveHistory(new[] { folderVersion });
 
-            return filesHash;
+            return folderVersion;
         }
 
         private bool MatchExclude(string filePath, string exclude)
         {
+            if (string.IsNullOrEmpty(exclude))
+                return false;
             return filePath.Contains(exclude);
         }
     }

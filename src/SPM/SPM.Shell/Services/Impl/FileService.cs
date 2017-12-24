@@ -53,7 +53,7 @@ namespace SPM.Shell.Services
             return Directory.GetFiles(directory).ToList();
         }
 
-        public async Task<byte[]> ZipFiles(List<string> packageFiles)
+        public async Task<byte[]> ZipFiles(IEnumerable<string> packageFiles)
         {
             string tempDirectoryName = "~temp_archive_spm" + Guid.NewGuid();
             string tempArchiveName = $"temp_archive{Guid.NewGuid()}.zip";
@@ -105,5 +105,8 @@ namespace SPM.Shell.Services
                 archive.ExtractToDirectory(".");
             }
         }
+
+        private string[] defaultIgnore = new[] { ".spm", "spm.json" };
+        public IEnumerable<string> GetDefaultIgnore() => defaultIgnore;
     }
 }
