@@ -108,5 +108,10 @@ namespace SPM.Shell.Services
 
         private string[] defaultIgnore = new[] { ".spm", "spm.json" };
         public IEnumerable<string> GetDefaultIgnore() => defaultIgnore;
+
+        public string[] GetWorkingDirectoryFiles(IEnumerable<string> ignoreList)
+        {
+            return Directory.GetFiles(".").Where(f => ignoreList.Union(defaultIgnore).All(i => !f.Contains(i))).ToArray();
+        }
     }
 }

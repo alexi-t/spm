@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SPM.Shell</RootNamespace>
     <AssemblyName>SPM.Shell</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -65,7 +65,6 @@
     <Compile Include="Commands\Base\CommandModifier.cs" />
     <Compile Include="Commands\Init\InitCommand.cs" />
     <Compile Include="Commands\Pull\PullCommand.cs" />
-    <Compile Include="Commands\Push\PushCommand.cs" />
     <Compile Include="Commands\Tag\TagCommand.cs" />
     <Compile Include="Config\CofigurationPackageDescription.cs" />
     <Compile Include="Config\PackageConfiguration.cs" />
@@ -98,6 +97,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Commands\Push\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

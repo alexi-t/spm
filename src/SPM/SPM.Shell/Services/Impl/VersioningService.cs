@@ -50,6 +50,7 @@ namespace SPM.Shell.Services
             return new FolderVersionEntry[0];
         }
 
+        private void SaveHistory(FolderVersionEntry entry) => SaveHistory(new[] { entry });
         private void SaveHistory(FolderVersionEntry[] entries)
         {
             FolderVersionEntry[] currentHistory = ReadCurrentHistory();
@@ -93,6 +94,42 @@ namespace SPM.Shell.Services
             if (string.IsNullOrEmpty(exclude))
                 return false;
             return filePath.Contains(exclude);
+        }
+
+        public FolderVersionEntry CreateDiff(string[] currentFilesList)
+        {
+            FolderVersionEntry lastVersion = ReadCurrentHistory().LastOrDefault();
+            FolderVersionEntry currentVersion = new FolderVersionEntry();
+
+            IEnumerable<FileHistoryEntry> lastFilesVersion = lastVersion.Files;
+            List<FileHistoryEntry> touchedEntries = new List<FileHistoryEntry>();
+
+            foreach (string currentFilePath in currentFilesList)
+            {
+                string currentFileHash = hashService.ComputeFileHash(currentFilePath);
+                FileHistoryEntry fileLastVersion = lastFilesVersion.FirstOrDefault(f => f.Path == currentFilePath);
+
+                if (fileLastVersion != null)
+                {
+                    if (fileLastVersion.Hash != currentFileHash)
+                        currentVersion.AddEntry(currentFilePath, currentFileHash, FileHistoryType.Modified);
+
+                    touchedEntries.Add(fileLastVersion);
+                }
+                else
+                {
+                    currentVersion.AddEntry(currentFilePath, currentFileHash, FileHistoryType.Added);
+                }
+            }
+
+            foreach (FileHistoryEntry deletedEntry in lastVersion.Files.Except(touchedEntries))
+            {
+                currentVersion.AddEntry(deletedEntry.Path, string.Empty, FileHistoryType.Deleted);
+            }
+
+            SaveHistory(currentVersion);
+
+            return currentVersion;
         }
     }
 }

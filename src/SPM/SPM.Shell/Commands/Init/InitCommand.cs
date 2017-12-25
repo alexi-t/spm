@@ -46,7 +46,7 @@ namespace SPM.Shell.Commands.Init
                         
             configService.CreateConfig(packageName, version.Hash);
 
-            await onlineStoreService.PushPackageAsync($"{packageName}@initial", await fileService.ZipFiles(version.Files.Select(f => f.Path)));
+            await onlineStoreService.PushPackageAsync($"{packageName}@initial", version);
         }
     }
 }

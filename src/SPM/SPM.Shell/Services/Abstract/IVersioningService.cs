@@ -10,5 +10,6 @@ namespace SPM.Shell.Services
     public interface IVersioningService
     {
         Task<FolderVersionEntry> CreateInitialVersion(bool explicitInclude, IEnumerable<string> ignore);
+        FolderVersionEntry CreateDiff(string[] currentFilesList);
     }
 }

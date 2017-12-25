@@ -31,6 +31,7 @@ namespace SPM.Shell.Services
                 return SerializeHash(hashFunction.ComputeHash(ms.ToArray())); ;
             }
         }
+        string IHashService.ComputeFileHash(string path) => ComputeFilesHash(new[] { path });
 
         private string SerializeHash(byte[] hash) => string.Join("", hash.Select(b => b.ToString("x2")));
 
@@ -41,5 +42,7 @@ namespace SPM.Shell.Services
                 return hashFunction.ComputeHash(fileStream);
             }
         }
+
+        
     }
 }

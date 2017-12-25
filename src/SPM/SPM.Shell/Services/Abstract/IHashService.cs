@@ -9,5 +9,6 @@ namespace SPM.Shell.Services
     public interface IHashService
     {
         string ComputeFilesHash(IEnumerable<string> paths);
+        string ComputeFileHash(string path);
     }
 }

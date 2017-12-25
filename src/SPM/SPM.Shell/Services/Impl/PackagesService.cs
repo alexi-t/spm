@@ -13,11 +13,14 @@ namespace SPM.Shell.Services
     public class PackagesService : IOnlineStoreService
     {
         private readonly IUIService uiService;
+        private readonly IFileService fileService;
         private readonly HttpClient httpClient;
 
-        public PackagesService(string packageServiceUrl, IUIService uiService)
+        public PackagesService(string packageServiceUrl, IUIService uiService, IFileService fileService)
         {
             this.uiService = uiService;
+            this.fileService = fileService;
+
             this.httpClient = new HttpClient()
             {
                 BaseAddress = new Uri(packageServiceUrl),
@@ -25,14 +28,18 @@ namespace SPM.Shell.Services
             };
         }
 
-        public async Task PushPackageAsync(string name, byte[] packageData)
+        public async Task PushPackageAsync(string name, FolderVersionEntry folderVersion)
         {
+            byte[] fileData = await fileService.ZipFiles(folderVersion.Files.Where(f => f.EditType != FileHistoryType.Deleted).Select(f => f.Path));
+
             var content = new MultipartFormDataContent
             {
-                { new StringContent(name), "name" },
-                { new ByteArrayContent(packageData), "packageFile", "package.zip" }
+                { new StringContent(name), "nameAndTag" },
+                { new StringContent(JsonConvert.SerializeObject(folderVersion)), "versionInfo"  },
+                { new ByteArrayContent(fileData), "versionFile", "data.zip" }
             };
-            var request = new HttpRequestMessage()
+
+            var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 Content = new ProgressableStreamContent(content, (long uploaded, long size) =>
