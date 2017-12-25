@@ -48,14 +48,14 @@ namespace SPM.Http.PackageService.Service
             return tags.Any() ? tags.Select(t => t.Tag).ToList() : null;
         }
 
-        internal async Task<Package> AddPackageAsync(string name, string tag, string fileHash)
+        internal async Task<Package> AddPackageAsync(string name, string tag, string versionInfo, string fileHash)
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
             var package = new Package { Name = name, Tag = tag, Hash = fileHash };
 
             tableStorage.Add(PackagesTableName, package);
-            tableStorage.Add(PackagesTagsTableName, new PackageTag(name, tag));
+            tableStorage.Add(PackagesTagsTableName, new PackageTag(name, tag, versionInfo));
 
             await tableStorage.SaveAsync();
 

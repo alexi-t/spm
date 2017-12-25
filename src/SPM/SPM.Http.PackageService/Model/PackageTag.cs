@@ -9,11 +9,12 @@ namespace SPM.Http.PackageService.Model
     public class PackageTag
     {
         public PackageTag() { }
-        public PackageTag(string packageName, string tag)
+        public PackageTag(string packageName, string tag, string versionInfo)
         {
             Package = packageName;
             Timestamp = (DateTime.MaxValue.Ticks - DateTime.Now.Ticks).ToString();
             Tag = tag;
+            VersionInfo = versionInfo;
         }
 
         [PartitionKey]
@@ -21,6 +22,8 @@ namespace SPM.Http.PackageService.Model
 
         [RowKey]
         public string Timestamp { get; set; }
+
+        public string VersionInfo { get; set; }
 
         public string Tag { get; set; }
     }

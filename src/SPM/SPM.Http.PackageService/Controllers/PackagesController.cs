@@ -63,7 +63,7 @@ namespace SPM.Http.PackageService.Controllers
 
         // POST api/values
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromForm(Name = "name")]string nameAndTag, IFormFile packageFile)
+        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag,[FromForm]string versionInfo, IFormFile versionFile)
         {
             int separatorIndex = nameAndTag.LastIndexOf('@');
             string name = nameAndTag.Substring(0, separatorIndex);
@@ -71,24 +71,24 @@ namespace SPM.Http.PackageService.Controllers
 
             var package = await packageService.GetPackageByNameAndTagAsync(name, tag);
 
-            if (packageFile == null)
+            if (versionFile == null)
                 return BadRequest("No package file provided");
 
-            byte[] packageData = new byte[packageFile.Length];
-            using (var stream = packageFile.OpenReadStream())
+            byte[] packageData = new byte[versionFile.Length];
+            using (var stream = versionFile.OpenReadStream())
             {
-                await stream.ReadAsync(packageData, 0, (int)packageFile.Length);
+                await stream.ReadAsync(packageData, 0, (int)versionFile.Length);
             }
 
-            var fileHash = await fileService.UploadFileAsync($"{name}@{tag}", packageData);
+            var zipHash = await fileService.UploadFileAsync($"{name}@{tag}", packageData);
 
-            if (!string.IsNullOrEmpty(fileHash))
+            if (!string.IsNullOrEmpty(zipHash))
             {
                 if (package == null)
-                    return Ok(await packageService.AddPackageAsync(name, tag, fileHash));
+                    return Ok(await packageService.AddPackageAsync(name, tag, versionInfo, zipHash));
                 else
                 {
-                    package.Hash = fileHash;
+                    package.Hash = zipHash;
                     await packageService.UpdatePackageAsync(package);
                     return Ok(package);
                 }
