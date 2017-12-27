@@ -39,11 +39,13 @@ namespace SPM.Http.PackageService.Service
             }
         }
 
-        public async Task<List<string>> GetPackageTagsAsync(string packageName, int count)
+        public async Task<List<string>> GetPackageTagsAsync(string packageName, int count = 0, string fromRowId = null)
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
-            var tags = await tableStorage.CreateQuery<PackageTag>(PackagesTagsTableName).PartitionKeyEquals(packageName).Async();
+            IRowKeyFilterable<PackageTag> filteredTags = tableStorage.CreateQuery<PackageTag>(PackagesTagsTableName).PartitionKeyEquals(packageName);
+
+            var tags = await filteredTags.Async();
 
             return tags.Any() ? tags.Select(t => t.Tag).ToList() : null;
         }

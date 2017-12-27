@@ -1,4 +1,6 @@
-﻿using SPM.Shell.Commands.Base;
+﻿using Newtonsoft.Json;
+using SPM.Shell.Commands.Base;
+using SPM.Shell.Exceptions;
 using SPM.Shell.Services;
 using SPM.Shell.Services.Model;
 using System;
@@ -19,48 +21,69 @@ namespace SPM.Shell.Commands.Pull
             Required = true
         };
         private readonly IFileService fileService;
-        private readonly IOnlineStoreService packagesService;
+        private readonly IOnlineStoreService onlineStoreService;
         private readonly IUIService uiService;
+        private readonly IConfigService configService;
         private readonly ILocalStoreService localStoreService;
 
-        public PullCommand(IOnlineStoreService packagesService, IFileService fileService, IUIService uiService, ILocalStoreService localStoreService) 
+        public PullCommand(
+            IOnlineStoreService onlineStoreService, 
+            ILocalStoreService localStoreService, 
+            IFileService fileService,
+            IUIService uiService, 
+            IConfigService configService) 
             : base("pull", inputs: new[] { packageNameInput })
         {
-            this.packagesService = packagesService;
+            this.onlineStoreService = onlineStoreService;
+            this.localStoreService = localStoreService;
             this.fileService = fileService;
             this.uiService = uiService;
-            this.localStoreService = localStoreService;
+            this.configService = configService;
         }
 
         protected async override Task RunCommandAsync()
         {
-            string packageNameArg = GetCommandInputValue(packageNameInput);
+            string packageNameAndTag = GetCommandInputValue(packageNameInput);
 
-            PackageInfo packageInfo = await packagesService.SearchPackageAsync(packageNameArg);
+            string[] packageTagHistory = null;
 
-            if (packageInfo == null)
+            try
             {
-                return;
+                Config.PackageConfiguration config = configService.GetConfig();
+                string currentPackageName = $"{config.Name}@{config.Tag}";
+                packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag, currentPackageName);
+            }
+            catch (ConfigFileNotFoundException)
+            {
+                packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag);
             }
 
-            string packageName = packageInfo.Name;
-            string packageTag = packageInfo.Tag;
-
-            if (!localStoreService.PackageExist(packageInfo))
+            foreach (string packageVersion in packageTagHistory)
             {
-                HttpOperationWithProgress downloadOperation = packagesService.DownloadPackage(packageName, packageTag);
+                PackageInfo packageInfo = await onlineStoreService.GetPackageVersionAsync(packageVersion);
 
-                downloadOperation.OnProgress += (processedCount, totalCount) =>
+                string packageName = packageInfo.Name;
+                string packageTag = packageInfo.Tag;
+                FolderVersionEntry folderVersion = JsonConvert.DeserializeObject<FolderVersionEntry>(packageInfo.VersionInfo);
+
+                if (!localStoreService.PackageExist(packageInfo))
                 {
-                    uiService.DisplayProgress((float)processedCount * 100 / totalCount);
-                };
+                    HttpOperationWithProgress downloadOperation = onlineStoreService.DownloadPackage(packageName, packageTag);
 
-                HttpResponseMessage response = await downloadOperation.GetOperationResultAsync();
-                
-                localStoreService.SavePackage(packageInfo, await response.Content.ReadAsByteArrayAsync());
+                    downloadOperation.OnProgress += (processedCount, totalCount) =>
+                    {
+                        uiService.DisplayProgress((float)processedCount * 100 / totalCount);
+                    };
+
+                    HttpResponseMessage response = await downloadOperation.GetOperationResultAsync();
+
+                    localStoreService.SavePackage(packageInfo, await response.Content.ReadAsByteArrayAsync());
+                }
+
+                localStoreService.RestorePackage(packageName, packageTag);
+
+                configService.SetTag(packageTag, folderVersion.Hash);
             }
-
-            localStoreService.RestorePackage(packageName, packageTag);
         }
     }
 }

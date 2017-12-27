@@ -13,6 +13,8 @@ namespace SPM.Shell.Services.Model
         public string Name { get; set; }
         [JsonProperty("tag")]
         public string Tag { get; set; }
+        [JsonProperty("versionInfo")]
+        public string VersionInfo { get; set; }
         [JsonProperty("hash")]
         public string Hash { get; set; }
         [JsonProperty("downloadLink")]

@@ -10,6 +10,5 @@ namespace SPM.Shell.Services
         void CreateConfig(string name, string versionHash);
 
         void SetTag(string tag, string hash);
-        List<string> GetCurrentFilesList();
     }
 }

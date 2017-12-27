@@ -17,12 +17,20 @@ namespace SPM.Shell.Services
             this.defaultForeColor = Console.ForegroundColor;
         }
 
-        public void AddMessage(string message, bool appendNewline = true)
+        public void AddMessage(string message, bool appendNewline = true, ConsoleColor? color = null)
         {
+            ConsoleColor originalColor = Console.ForegroundColor;
+
+            if (color.HasValue)
+                Console.ForegroundColor = color.Value;
+
             if (appendNewline)
                 Console.WriteLine(message);
             else
                 Console.Write(message);
+
+            if (color.HasValue)
+                Console.ForegroundColor = originalColor;
         }
 
         public bool Ask(string question, bool? deafultAnswer = null)

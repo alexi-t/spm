@@ -96,6 +96,21 @@ namespace SPM.Http.PackageService.Controllers
             return BadRequest("Internal error in file service.");
         }
 
+        [HttpGet("{packageName}/tags")]
+        public async Task<IActionResult> GetTagsAsync(string packageName, [FromQuery]string to, [FromQuery]string from)
+        {
+            if (string.IsNullOrEmpty(to))
+                return BadRequest();
+
+            List<string> tags = new List<string>();
+            
+            while(!tags.Contains(from))
+            {
+                List<string>  intermediateResult = await packageService.GetPackageTagsAsync(packageName, 10);
+            }
+
+            return Json(tags);
+        }
 
         [HttpGet("download")]
         public async Task<IActionResult> GetDownloadLink(string name)

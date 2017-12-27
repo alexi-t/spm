@@ -7,8 +7,9 @@ namespace SPM.Shell.Services
 {
     public interface IOnlineStoreService
     {
-        Task<PackageInfo> SearchPackageAsync(string name);
+        Task<PackageInfo> GetPackageVersionAsync(string name);
         HttpOperationWithProgress DownloadPackage(string name, string tag);
         Task PushPackageAsync(string packageNameAndTag, FolderVersionEntry folderVersion);
+        Task<string[]> GetPackageTagsAsync(string packageNameTo, string packageNameFrom = null);
     }
 }

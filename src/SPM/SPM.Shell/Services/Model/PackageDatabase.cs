@@ -12,5 +12,6 @@ namespace SPM.Shell.Services.Model
         public string Tag { get; set; }
         public string Path { get; set; }
         public string Hash { get; set; }
+        public FolderVersionEntry FolderVersion { get; set; }
     }
 }

@@ -45,7 +45,8 @@ namespace SPM.Shell.Services
                 Name = packageInfo.Name,
                 Tag = packageInfo.Tag,
                 Hash = packageInfo.Hash,
-                Path = path
+                Path = path,
+                FolderVersion = JsonConvert.DeserializeObject<FolderVersionEntry>(packageInfo.VersionInfo)
             };
 
             List<CachedPackageInfo> allPackages = GetAllCachedPackages();
@@ -64,10 +65,13 @@ namespace SPM.Shell.Services
 
             if (cachedPackage == null)
                 return;
-
-            fileService.ClearWorkingDirectory();
-            
+                        
             fileService.Unzip(cachedPackage.Path);
+
+            foreach (FileHistoryEntry deletedFile in cachedPackage.FolderVersion.Files.Where(f=>f.EditType == FileHistoryType.Deleted))
+            {
+                File.Delete(deletedFile.Path);
+            }
         }
 
         public void SavePackage(PackageInfo packageInfo, byte[] data)

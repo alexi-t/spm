@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SPM.Shell.Services.Model;
+using SPM.Shell.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,7 +66,7 @@ namespace SPM.Shell.Services
         }
         
 
-        public async Task<PackageInfo> SearchPackageAsync(string name)
+        public async Task<PackageInfo> GetPackageVersionAsync(string name)
         {
             var request = new HttpRequestMessage()
             {
@@ -113,6 +114,29 @@ namespace SPM.Shell.Services
 
             return new HttpOperationWithProgress(httpClient, request);
         }
-        
+
+        public async Task<string[]> GetPackageTagsAsync(string packageNameTo, string packageNameFrom = null)
+        {
+            string packageName = PackageNameAndTagHelper.GetPackageName(packageNameTo);
+
+            string toTag = PackageNameAndTagHelper.GetPackageTag(packageNameTo);
+            string fromTag = packageNameFrom != null ? PackageNameAndTagHelper.GetPackageTag(packageNameFrom) : string.Empty;
+
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"packages/{packageName}/tags?to={toTag}&from={fromTag}", UriKind.Relative),
+                Method = HttpMethod.Get
+            };
+
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string arrayJSON = await response.Content.ReadAsStringAsync();
+
+                return Newtonsoft.Json.Linq.JArray.Parse(arrayJSON).Select(t => t.ToObject<string>()).ToArray();
+            }
+            return new string[0];
+        }
     }
 }

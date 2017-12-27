@@ -93,6 +93,7 @@
     <Compile Include="Services\Impl\UIService.cs" />
     <Compile Include="SPM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\PackageNameAndTagHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
