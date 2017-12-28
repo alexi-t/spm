@@ -13,6 +13,6 @@ namespace SPM.Http.PackageService.Model
         public string Name { get; set; }
         [RowKey]
         public string Tag { get; set; }
-
+        public string VersionInfo { get; internal set; }
     }
 }

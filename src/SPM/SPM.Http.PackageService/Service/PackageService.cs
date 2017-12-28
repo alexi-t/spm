@@ -59,10 +59,10 @@ namespace SPM.Http.PackageService.Service
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
-            var package = new Package { Name = name, Tag = tag, Hash = fileHash };
+            var package = new Package { Name = name, Tag = tag, VersionInfo = versionInfo, Hash = fileHash };
 
             tableStorage.Add(PackagesTableName, package);
-            tableStorage.Add(PackagesTagsTableName, new PackageTag(name, tag, versionInfo));
+            tableStorage.Add(PackagesTagsTableName, new PackageTag(name, tag));
 
             await tableStorage.SaveAsync();
 
