@@ -39,15 +39,20 @@ namespace SPM.Http.PackageService.Service
             }
         }
 
-        public async Task<List<string>> GetPackageTagsAsync(string packageName, int count = 0, string fromRowId = null)
+        public async Task<List<PackageTag>> GetPackageTagsAsync(string packageName, int count = 0, string fromRowId = null)
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
-            IRowKeyFilterable<PackageTag> filteredTags = tableStorage.CreateQuery<PackageTag>(PackagesTagsTableName).PartitionKeyEquals(packageName);
+            IQueryAsync<PackageTag> filteredTags = tableStorage.CreateQuery<PackageTag>(PackagesTagsTableName).PartitionKeyEquals(packageName);
+
+            if (!string.IsNullOrEmpty(fromRowId))
+                filteredTags = (filteredTags as IRowKeyFilterable<PackageTag>).RowKeyFrom(fromRowId).Exclusive();
+            if (count > 0)
+                filteredTags = (filteredTags as IQuery<PackageTag>).Top(count);
 
             var tags = await filteredTags.Async();
 
-            return tags.Any() ? tags.Select(t => t.Tag).ToList() : null;
+            return tags.ToList();
         }
 
         internal async Task<Package> AddPackageAsync(string name, string tag, string versionInfo, string fileHash)

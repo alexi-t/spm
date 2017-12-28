@@ -63,7 +63,7 @@ namespace SPM.Http.PackageService.Controllers
 
         // POST api/values
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag,[FromForm]string versionInfo, IFormFile versionFile)
+        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag, [FromForm]string versionInfo, IFormFile versionFile)
         {
             int separatorIndex = nameAndTag.LastIndexOf('@');
             string name = nameAndTag.Substring(0, separatorIndex);
@@ -102,14 +102,26 @@ namespace SPM.Http.PackageService.Controllers
             if (string.IsNullOrEmpty(to))
                 return BadRequest();
 
-            List<string> tags = new List<string>();
-            
-            while(!tags.Contains(from))
+            List<PackageTag> tags = new List<PackageTag>();
+
+            while (true)
             {
-                List<string>  intermediateResult = await packageService.GetPackageTagsAsync(packageName, 10);
+                IEnumerable<PackageTag> intermediateResult = await packageService.GetPackageTagsAsync(packageName, 3, tags.LastOrDefault()?.Timestamp);
+
+                if (!intermediateResult.Any())
+                    break;
+
+                if (!string.IsNullOrEmpty(from))
+                {
+                    tags.AddRange(intermediateResult.TakeWhile(t => t.Tag != from));
+                    if (intermediateResult.Any(t => t.Tag == from))
+                        break;
+                }
+                else
+                    tags.AddRange(intermediateResult);
             }
 
-            return Json(tags);
+            return Json(tags.SkipWhile(t => t.Tag != to).Select(t => t.Tag));
         }
 
         [HttpGet("download")]
