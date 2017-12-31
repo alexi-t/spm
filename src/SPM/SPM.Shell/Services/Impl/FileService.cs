@@ -111,7 +111,7 @@ namespace SPM.Shell.Services
 
         public string[] GetWorkingDirectoryFiles(IEnumerable<string> ignoreList)
         {
-            return Directory.GetFiles(".").Where(f => ignoreList.Union(defaultIgnore).All(i => !f.Contains(i))).ToArray();
+            return Directory.GetFiles(".").Where(f => (ignoreList ?? Enumerable.Empty<string>()).Union(defaultIgnore).All(i => !f.Contains(i))).ToArray();
         }
     }
 }
