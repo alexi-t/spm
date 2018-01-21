@@ -25,6 +25,14 @@ namespace SPM.Http.FileService.Services
             this.connectionString = connectionString;
         }
 
+        public void Init()
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            container.CreateIfNotExists();
+        }
+
         private string GetStringHash(HashAlgorithm algorithm, string str)
         {
             return string.Join("", algorithm.ComputeHash(Encoding.UTF8.GetBytes(str)).Select(b => b.ToString("x2")));

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using TechSmith.Hyde.Table;
 using TechSmith.Hyde;
 using TechSmith.Hyde.Common;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SPM.Http.PackageService.Service
 {
@@ -23,6 +25,20 @@ namespace SPM.Http.PackageService.Service
             this.connectionString = connectionString;
 
             this.storageAccount = new ConnectionStringCloudStorageAccount(connectionString);
+        }
+
+        public async void Init()
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+
+            CloudTable table = null;
+
+            table = tableClient.GetTableReference(PackagesTableName);
+            await table.CreateIfNotExistsAsync();
+
+            table = tableClient.GetTableReference(PackagesTagsTableName);
+            await table.CreateIfNotExistsAsync();
         }
 
         public async Task<Package> GetPackageByNameAndTagAsync(string name, string tag)

@@ -37,6 +37,7 @@ namespace SPM.Shell
                 }
             }
 
+            Console.ReadKey();
             return 0;
         }
     }

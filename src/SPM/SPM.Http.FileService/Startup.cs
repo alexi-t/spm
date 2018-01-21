@@ -41,6 +41,16 @@ namespace SPM.Http.FileService
             loggerFactory.AddDebug();
             
             app.UseMvc();
+
+            try
+            {
+                var cloudService = app.ApplicationServices.GetService<Services.CloudBlobService>();
+                cloudService.Init();
+            }
+            catch (Exception ex)
+            {
+                
+            }
         }
     }
 }

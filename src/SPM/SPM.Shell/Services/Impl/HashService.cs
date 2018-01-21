@@ -18,6 +18,28 @@ namespace SPM.Shell.Services
             this.fileService = fileService;
         }
 
+        public string ComputeHashUnion(IEnumerable<string> hashes)
+        {
+            var hashesData = new byte[20 * hashes.Count()];
+            using (var ms = new MemoryStream(hashesData))
+            {
+                foreach (var hashString in hashes)
+                {
+                    byte[] hash = new byte[20];
+                    for (int i = 0; i < hashString.Length; i++)
+                    {
+                        if (i % 2 == 0)
+                        {
+                            string hex = hashString.Substring(i, 2);
+                            hash[i / 2] = byte.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+                        }
+                    }
+                    ms.Write(hash, 0, 20);
+                }
+                return SerializeHash(hashFunction.ComputeHash(ms.ToArray())); ;
+            }
+        }
+
         public string ComputeFilesHash(IEnumerable<string> paths)
         {
             var hashesData = new byte[20 * paths.Count()];
@@ -43,6 +65,6 @@ namespace SPM.Shell.Services
             }
         }
 
-        
+
     }
 }

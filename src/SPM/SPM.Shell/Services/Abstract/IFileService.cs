@@ -22,6 +22,6 @@ namespace SPM.Shell.Services
         void Unzip(string packageZipPath);
         IEnumerable<string> GetDefaultIgnore();
 
-        string[] GetWorkingDirectoryFiles(IEnumerable<string> ignoreList);
+        List<string> GetWorkingDirectoryFiles(IEnumerable<string> ignoreList);
     }
 }

@@ -24,6 +24,7 @@ namespace SPM.Shell.Commands.Pull
         private readonly IOnlineStoreService onlineStoreService;
         private readonly IUIService uiService;
         private readonly IConfigService configService;
+        private readonly IHashService hashService;
         private readonly ILocalStoreService localStoreService;
 
         public PullCommand(
@@ -31,7 +32,8 @@ namespace SPM.Shell.Commands.Pull
             ILocalStoreService localStoreService, 
             IFileService fileService,
             IUIService uiService, 
-            IConfigService configService) 
+            IConfigService configService,
+            IHashService hashService) 
             : base("pull", inputs: new[] { packageNameInput })
         {
             this.onlineStoreService = onlineStoreService;
@@ -39,14 +41,17 @@ namespace SPM.Shell.Commands.Pull
             this.fileService = fileService;
             this.uiService = uiService;
             this.configService = configService;
+            this.hashService = hashService;
         }
 
         protected async override Task RunCommandAsync()
         {
             string packageNameAndTag = GetCommandInputValue(packageNameInput);
 
-            string[] packageTagHistory = null;
+            string packageName = packageNameAndTag.Split('@').FirstOrDefault();
 
+            string[] packageTagHistory = null;
+            
             try
             {
                 Config.PackageConfiguration config = configService.GetConfig();
@@ -58,12 +63,10 @@ namespace SPM.Shell.Commands.Pull
                 packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag);
             }
 
-            foreach (string packageVersion in packageTagHistory)
+            foreach (string packageTag in packageTagHistory.Reverse())
             {
-                PackageInfo packageInfo = await onlineStoreService.GetPackageVersionAsync(packageVersion);
-
-                string packageName = packageInfo.Name;
-                string packageTag = packageInfo.Tag;
+                PackageInfo packageInfo = await onlineStoreService.GetPackageVersionAsync($"{packageName}@{packageTag}");
+                
                 FolderVersionEntry folderVersion = JsonConvert.DeserializeObject<FolderVersionEntry>(packageInfo.VersionInfo);
 
                 if (!localStoreService.PackageExist(packageInfo))
@@ -81,8 +84,6 @@ namespace SPM.Shell.Commands.Pull
                 }
 
                 localStoreService.RestorePackage(packageName, packageTag);
-
-                configService.SetTag(packageTag, folderVersion.Hash);
             }
         }
     }

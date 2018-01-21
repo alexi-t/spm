@@ -19,12 +19,19 @@ namespace SPM.Shell.Commands.Init
         private readonly IVersioningService versioningService;
         private readonly IOnlineStoreService onlineStoreService;
         private readonly IFileService fileService;
+        private readonly IHashService hashService;
 
         private static CommandModifier explicitIncludeModifier = new CommandModifier("explicitInclude");
         private static CommandArgument ignoreList = new CommandArgument("ignore", "i");
 
-        public InitCommand(IVersioningService versioningService, IConfigService configService, IUIService uiService, IOnlineStoreService onlineStoreService, IFileService fileService) 
-            : base("init", 
+        public InitCommand(
+            IVersioningService versioningService,
+            IConfigService configService,
+            IUIService uiService,
+            IOnlineStoreService onlineStoreService,
+            IFileService fileService,
+            IHashService hashService)
+            : base("init",
                   modifiers: new[] { explicitIncludeModifier },
                   arguments: new[] { ignoreList })
         {
@@ -33,6 +40,7 @@ namespace SPM.Shell.Commands.Init
             this.versioningService = versioningService;
             this.onlineStoreService = onlineStoreService;
             this.fileService = fileService;
+            this.hashService = hashService;
         }
 
         protected async override Task RunCommandAsync()
@@ -40,11 +48,13 @@ namespace SPM.Shell.Commands.Init
             bool explicitInclude = HasModifier(explicitIncludeModifier);
             string ignoreSetup = GetArgumentValue(ignoreList);
 
-            FolderVersionEntry version = await versioningService.CreateInitialVersion(explicitInclude, ignoreSetup.Split(',').Union(fileService.GetDefaultIgnore()));
+            List<string> packageFiles = fileService.GetWorkingDirectoryFiles(ignoreSetup.Split(','));
+
+            FolderVersionEntry version = await versioningService.CreateInitialVersion(packageFiles.ToArray<string>());
 
             string packageName = uiService.RequestValue($"Enter package name: ");
-                        
-            configService.CreateConfig(packageName, version.Hash);
+
+            configService.CreateConfig(packageName, hashService.ComputeFilesHash(packageFiles));
 
             await onlineStoreService.PushPackageAsync($"{packageName}@initial", version);
         }

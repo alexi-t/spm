@@ -63,26 +63,16 @@ namespace SPM.Shell.Services
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task<FolderVersionEntry> CreateInitialVersion(bool explicitInclude, IEnumerable<string> ignore)
+        public async Task<FolderVersionEntry> CreateInitialVersion(IEnumerable<string> files)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
+            var folderVersion = new FolderVersionEntry();
 
-            FolderVersionEntry folderVersion = new FolderVersionEntry();
-
-            List<string> resultFiles = new List<string>();
-
-            foreach (string filePath in allFiles)
+            foreach (string filePath in files)
             {
-                if (ignore.All(i => !MatchExclude(filePath, i)))
-                {
-                    uiService.AddMessage($"Adding {filePath}...");
-                    resultFiles.Add(filePath);
-                    folderVersion.AddEntry(filePath, hashService.ComputeFilesHash(new[] { filePath }), FileHistoryType.Added);
-                }
+                uiService.AddMessage($"Adding {filePath}...");
+                folderVersion.AddEntry(filePath, hashService.ComputeFilesHash(new[] { filePath }), FileHistoryType.Added);
             }
-
-            folderVersion.SetHash(hashService.ComputeFilesHash(resultFiles));
 
             SaveHistory(new[] { folderVersion });
 
@@ -96,7 +86,7 @@ namespace SPM.Shell.Services
             return filePath.Contains(exclude);
         }
 
-        public FolderVersionEntry CreateDiff(string[] currentFilesList)
+        public FolderVersionEntry CreateDiff(IEnumerable<string> currentFilesList)
         {
             FolderVersionEntry lastVersion = ReadCurrentHistory().LastOrDefault();
             FolderVersionEntry currentVersion = new FolderVersionEntry();

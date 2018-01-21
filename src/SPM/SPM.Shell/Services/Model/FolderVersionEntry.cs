@@ -22,11 +22,8 @@ namespace SPM.Shell.Services.Model
                 Hash = hash,
                 EditType = editType
             });
-
-        public void SetHash(string hash) => Hash = hash;
-
+        
         public int Timestamp { get; set; }
         public IReadOnlyList<FileHistoryEntry> Files => files;
-        public string Hash { get; private set; }
     }
 }

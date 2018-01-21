@@ -54,7 +54,7 @@ namespace SPM.Shell.Commands.Tag
         {
             PackageConfiguration config = configService.GetConfig();
 
-            string[] currentFilesList = fileService.GetWorkingDirectoryFiles(config.ExcludePaths);
+            List<string> currentFilesList = fileService.GetWorkingDirectoryFiles(config.ExcludePaths);
 
             string currentHash = hashService.ComputeFilesHash(currentFilesList);
 
@@ -68,9 +68,9 @@ namespace SPM.Shell.Commands.Tag
 
             FolderVersionEntry folderVersion = versioningService.CreateDiff(currentFilesList);
 
-            configService.SetTag(tag, folderVersion.Hash);
+            configService.SetTag(tag, hashService.ComputeFilesHash(currentFilesList));
 
-            await onlineStoreService.PushPackageAsync($"{config.Name}@{config.Tag}", folderVersion);
+            await onlineStoreService.PushPackageAsync($"{config.Name}@{tag}", folderVersion);
         }
     }
 }
