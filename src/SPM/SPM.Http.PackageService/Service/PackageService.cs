@@ -71,11 +71,11 @@ namespace SPM.Http.PackageService.Service
             return tags.ToList();
         }
 
-        internal async Task<Package> AddPackageAsync(string name, string tag, string versionInfo, string fileHash)
+        internal async Task<Package> AddPackageAsync(string name, string tag, string tagHash, string versionInfo, string fileHash)
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
-            var package = new Package { Name = name, Tag = tag, VersionInfo = versionInfo, Hash = fileHash };
+            var package = new Package { Name = name, Tag = tag, TagHash = tagHash, VersionInfo = versionInfo, Hash = fileHash };
 
             tableStorage.Add(PackagesTableName, package);
             tableStorage.Add(PackagesTagsTableName, new PackageTag(name, tag));

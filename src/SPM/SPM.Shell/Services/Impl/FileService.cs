@@ -99,11 +99,21 @@ namespace SPM.Shell.Services
 
         public void Unzip(string packageZipPath)
         {
+            string tempFolderName = $".\\~temp_{Guid.NewGuid()}";
             using (var fs = File.OpenRead(packageZipPath))
             {
                 ZipArchive archive = new ZipArchive(fs, ZipArchiveMode.Read);
-                archive.ExtractToDirectory(".");
+                archive.ExtractToDirectory(tempFolderName);
             }
+
+            string[] extractedFiles = Directory.GetFiles(tempFolderName);
+
+            foreach (string extractedFilePath in extractedFiles)
+            {
+                File.Copy(extractedFilePath, $".\\{Path.GetFileName(extractedFilePath)}", true);
+            }
+
+            Directory.Delete(tempFolderName, true);
         }
 
         private string[] defaultIgnore = new[] { ".spm", "spm.json" };

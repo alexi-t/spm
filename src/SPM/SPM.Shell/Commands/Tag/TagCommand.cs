@@ -67,10 +67,10 @@ namespace SPM.Shell.Commands.Tag
             string tag = GetTagName();
 
             FolderVersionEntry folderVersion = versioningService.CreateDiff(currentFilesList);
+            
+            configService.SetTag(tag, currentHash);
 
-            configService.SetTag(tag, hashService.ComputeFilesHash(currentFilesList));
-
-            await onlineStoreService.PushPackageAsync($"{config.Name}@{tag}", folderVersion);
+            await onlineStoreService.PushPackageAsync($"{config.Name}@{tag}", currentHash, folderVersion);
         }
     }
 }

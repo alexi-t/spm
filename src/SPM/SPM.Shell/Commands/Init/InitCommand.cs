@@ -53,10 +53,11 @@ namespace SPM.Shell.Commands.Init
             FolderVersionEntry version = await versioningService.CreateInitialVersion(packageFiles.ToArray<string>());
 
             string packageName = uiService.RequestValue($"Enter package name: ");
+            string packageHash = hashService.ComputeFilesHash(packageFiles);
 
-            configService.CreateConfig(packageName, hashService.ComputeFilesHash(packageFiles));
+            configService.CreateConfig(packageName, packageHash);
 
-            await onlineStoreService.PushPackageAsync($"{packageName}@initial", version);
+            await onlineStoreService.PushPackageAsync($"{packageName}@initial", packageHash, version);
         }
     }
 }

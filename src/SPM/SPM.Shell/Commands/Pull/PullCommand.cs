@@ -51,15 +51,22 @@ namespace SPM.Shell.Commands.Pull
             string packageName = packageNameAndTag.Split('@').FirstOrDefault();
 
             string[] packageTagHistory = null;
-            
+
+            bool createConfig = false;
+
             try
             {
                 Config.PackageConfiguration config = configService.GetConfig();
+
+                if (packageName != config.Name)
+                    throw new InvalidOperationException($"Folder binded to another package {config.Name}");
+
                 string currentPackageName = $"{config.Name}@{config.Tag}";
                 packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag, currentPackageName);
             }
             catch (ConfigFileNotFoundException)
             {
+                createConfig = true;
                 packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag);
             }
 
@@ -84,6 +91,14 @@ namespace SPM.Shell.Commands.Pull
                 }
 
                 localStoreService.RestorePackage(packageName, packageTag);
+
+                if (createConfig)
+                {
+                    configService.CreateConfig(packageNameAndTag, packageInfo.Hash);
+                    createConfig = false;
+                }
+                else
+                    configService.SetTag(packageTag, packageInfo.Hash);
             }
         }
     }

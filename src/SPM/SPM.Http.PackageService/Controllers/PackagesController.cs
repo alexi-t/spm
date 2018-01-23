@@ -63,7 +63,7 @@ namespace SPM.Http.PackageService.Controllers
 
         // POST api/values
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag, [FromForm]string versionInfo, IFormFile versionFile)
+        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag, [FromForm]string tagHash, [FromForm]string versionInfo, IFormFile versionFile)
         {
             int separatorIndex = nameAndTag.LastIndexOf('@');
             string name = nameAndTag.Substring(0, separatorIndex);
@@ -85,7 +85,7 @@ namespace SPM.Http.PackageService.Controllers
             if (!string.IsNullOrEmpty(zipHash))
             {
                 if (package == null)
-                    return Ok(await packageService.AddPackageAsync(name, tag, versionInfo, zipHash));
+                    return Ok(await packageService.AddPackageAsync(name, tag, tagHash, versionInfo, zipHash));
                 else
                 {
                     package.Hash = zipHash;

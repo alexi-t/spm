@@ -29,13 +29,14 @@ namespace SPM.Shell.Services
             };
         }
 
-        public async Task PushPackageAsync(string name, FolderVersionEntry folderVersion)
+        public async Task PushPackageAsync(string name, string tagHash, FolderVersionEntry folderVersion)
         {
             byte[] fileData = await fileService.ZipFiles(folderVersion.Files.Where(f => f.EditType != FileHistoryType.Deleted).Select(f => f.Path));
 
             var content = new MultipartFormDataContent
             {
                 { new StringContent(name), "nameAndTag" },
+                { new StringContent("tagHash"), tagHash },
                 { new StringContent(JsonConvert.SerializeObject(folderVersion)), "versionInfo"  },
                 { new ByteArrayContent(fileData), "versionFile", "data.zip" }
             };

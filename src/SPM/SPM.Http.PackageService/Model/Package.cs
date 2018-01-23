@@ -14,5 +14,6 @@ namespace SPM.Http.PackageService.Model
         [RowKey]
         public string Tag { get; set; }
         public string VersionInfo { get; internal set; }
+        public string TagHash { get; internal set; }
     }
 }

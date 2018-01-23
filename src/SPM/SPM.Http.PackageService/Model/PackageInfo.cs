@@ -11,7 +11,7 @@ namespace SPM.Http.PackageService.Model
         {
             Name = package.Name;
             Tag = package.Tag;
-            Hash = package.Hash;
+            Hash = package.TagHash;
             VersionInfo = package.VersionInfo;
 
             DownloadLink = string.Format(downloadLinkFormat, Name + "@" + Tag, package.Hash);

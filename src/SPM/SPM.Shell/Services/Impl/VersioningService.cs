@@ -88,10 +88,29 @@ namespace SPM.Shell.Services
 
         public FolderVersionEntry CreateDiff(IEnumerable<string> currentFilesList)
         {
-            FolderVersionEntry lastVersion = ReadCurrentHistory().LastOrDefault();
-            FolderVersionEntry currentVersion = new FolderVersionEntry();
+            FolderVersionEntry[] currentHistory = ReadCurrentHistory();
 
-            IEnumerable<FileHistoryEntry> lastFilesVersion = lastVersion.Files;
+            var lastFilesVersion = new List<FileHistoryEntry>();
+            foreach (var historyEntry in currentHistory)
+            {
+                lastFilesVersion.AddRange(historyEntry.Files.Where(f => f.EditType == FileHistoryType.Added));
+
+                foreach (FileHistoryEntry deletedEntry in historyEntry.Files.Where(fv => fv.EditType == FileHistoryType.Deleted))
+                {
+                    FileHistoryEntry entryToRemove = lastFilesVersion.FirstOrDefault(fv => fv.Path == deletedEntry.Path);
+                    if (entryToRemove != null)
+                    {
+                        lastFilesVersion.Remove(entryToRemove);
+                    }
+                    else
+                    {
+                        //delete entry without added file, an error?
+                    }
+                }
+            }
+
+            FolderVersionEntry currentVersion = new FolderVersionEntry();
+            
             List<FileHistoryEntry> touchedEntries = new List<FileHistoryEntry>();
 
             foreach (string currentFilePath in currentFilesList)
@@ -112,7 +131,7 @@ namespace SPM.Shell.Services
                 }
             }
 
-            foreach (FileHistoryEntry deletedEntry in lastVersion.Files.Except(touchedEntries))
+            foreach (FileHistoryEntry deletedEntry in lastFilesVersion.Except(touchedEntries))
             {
                 currentVersion.AddEntry(deletedEntry.Path, string.Empty, FileHistoryType.Deleted);
             }
