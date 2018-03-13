@@ -4,6 +4,7 @@ using SPM.Shell.Services;
 using SPM.Shell.Services.Model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,11 +24,17 @@ namespace SPM.Shell.Commands.Tag
         private readonly IConfigService configService;
         private readonly IFileService fileService;
         private readonly IHashService hashService;
-        private readonly UIService uiService;
+        private readonly IUIService uiService;
         private readonly IVersioningService versioningService;
         private readonly IOnlineStoreService onlineStoreService;
 
-        public TagCommand(IConfigService configService, IFileService fileService, IHashService hashService, UIService uiService, IVersioningService versioningService, IOnlineStoreService onlineStoreService)
+        public TagCommand(
+            IConfigService configService, 
+            IFileService fileService, 
+            IHashService hashService, 
+            IUIService uiService, 
+            IVersioningService versioningService, 
+            IOnlineStoreService onlineStoreService)
             : base("tag", inputs: new[] { tagNameInput })
         {
             this.configService = configService;
@@ -38,13 +45,16 @@ namespace SPM.Shell.Commands.Tag
             this.onlineStoreService = onlineStoreService;
         }
 
-        private string GetTagName()
+        private async Task<string> GetTagName(PackageConfiguration configuration)
         {
             string tag = GetCommandInputValue(tagNameInput);
 
             if (string.IsNullOrEmpty(tag))
             {
                 tag = DateTime.Now.ToString("yyyyMMdd");
+
+                string[] tags = await onlineStoreService.GetAllPackageTagsAsync(configuration.Name, 1);
+                string lastTag = tags.FirstOrDefault();
             }
 
             return tag;
@@ -64,10 +74,17 @@ namespace SPM.Shell.Commands.Tag
                 return;
             }
 
-            string tag = GetTagName();
+            string tag =  await GetTagName(config);
 
             FolderVersionEntry folderVersion = versioningService.CreateDiff(currentFilesList);
-            
+
+            uiService.AddMessage($"Created {config.Name}@{tag}");
+            uiService.AddMessage("List of changes:");
+            foreach (FileHistoryEntry fileHistoryEntry in folderVersion.Files)
+            {
+                uiService.AddMessage($"\t[{fileHistoryEntry.EditType.ToString().ToLower()}]\t{Path.GetFileName(fileHistoryEntry.Path)}");
+            }
+
             configService.SetTag(tag, currentHash);
 
             await onlineStoreService.PushPackageAsync($"{config.Name}@{tag}", currentHash, folderVersion);

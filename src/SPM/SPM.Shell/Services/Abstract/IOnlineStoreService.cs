@@ -11,5 +11,6 @@ namespace SPM.Shell.Services
         HttpOperationWithProgress DownloadPackage(string name, string tag);
         Task PushPackageAsync(string packageNameAndTag, string tagHash, FolderVersionEntry folderVersion);
         Task<string[]> GetPackageTagsAsync(string packageNameTo, string packageNameFrom = null);
+        Task<string[]> GetAllPackageTagsAsync(string packageName, int count);
     }
 }

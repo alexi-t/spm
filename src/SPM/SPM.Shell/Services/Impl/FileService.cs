@@ -110,7 +110,14 @@ namespace SPM.Shell.Services
 
             foreach (string extractedFilePath in extractedFiles)
             {
-                File.Copy(extractedFilePath, $".\\{Path.GetFileName(extractedFilePath)}", true);
+                string targetFilePath = $".\\{Path.GetFileName(extractedFilePath)}";
+                if (File.Exists(targetFilePath))
+                {
+                    if (uiService.Ask($"{targetFilePath} already exist, overwrite?"))
+                        File.Copy(extractedFilePath, targetFilePath, true);
+                }
+                else
+                    File.Copy(extractedFilePath, targetFilePath);
             }
 
             Directory.Delete(tempFolderName, true);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,9 @@ namespace SPM.Shell.Services.Model
                 EditType = editType
             });
         
+        [JsonProperty("timestamp")]
         public int Timestamp { get; set; }
+        [JsonProperty("files")]
         public IReadOnlyList<FileHistoryEntry> Files => files;
     }
 }

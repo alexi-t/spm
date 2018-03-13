@@ -8,7 +8,6 @@ namespace SPM.Http.PackageService.Service
 {
     public class FileService
     {
-        private readonly string serviceUrl;
         private readonly HttpClient httpClient;
 
         public FileService(string serviceUrl)

@@ -9,18 +9,14 @@ namespace SPM.Http.PackageService.Model
     {
         public PackageInfo(Package package, string downloadLinkFormat)
         {
-            Name = package.Name;
-            Tag = package.Tag;
-            Hash = package.TagHash;
-            VersionInfo = package.VersionInfo;
+            Name = package.Name.Split('@').First();
+            Tag = package.Name.Split('@').Last();
 
-            DownloadLink = string.Format(downloadLinkFormat, Name + "@" + Tag, package.Hash);
+            DownloadLink = string.Format(downloadLinkFormat, Name + "@" + Tag, package.FileHash);
         }
 
         public string Name { get; set; }
         public string Tag { get; set; }
-        public string Hash { get; set; }
-        public string VersionInfo { get; set; }
         public string DownloadLink { get; set; }
     }
 }

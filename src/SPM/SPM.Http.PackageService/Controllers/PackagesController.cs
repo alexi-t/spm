@@ -21,12 +21,12 @@ namespace SPM.Http.PackageService.Controllers
         }
 
         [HttpGet("getAll")]
-        public async Task<IActionResult> GetAllTagsAsync([FromQuery]string name, [FromQuery]int count = 10)
+        public async Task<IActionResult> GetAllTagsAsync([FromQuery]string name)
         {
             if (string.IsNullOrEmpty(name))
                 return BadRequest();
 
-            var tags = await packageService.GetPackageTagsAsync(name, count);
+            var tags = await packageService.GetPackageTagsAsync(name);
 
             if (tags == null)
                 return NotFound();
@@ -63,14 +63,12 @@ namespace SPM.Http.PackageService.Controllers
 
         // POST api/values
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag, [FromForm]string tagHash, [FromForm]string versionInfo, IFormFile versionFile)
+        public async Task<IActionResult> PostAsync([FromForm]string nameAndTag, [FromForm]string packageChanges, IFormFile versionFile)
         {
             int separatorIndex = nameAndTag.LastIndexOf('@');
             string name = nameAndTag.Substring(0, separatorIndex);
             string tag = nameAndTag.Substring(separatorIndex + 1);
-
-            var package = await packageService.GetPackageByNameAndTagAsync(name, tag);
-
+            
             if (versionFile == null)
                 return BadRequest("No package file provided");
 
@@ -84,14 +82,7 @@ namespace SPM.Http.PackageService.Controllers
 
             if (!string.IsNullOrEmpty(zipHash))
             {
-                if (package == null)
-                    return Ok(await packageService.AddPackageAsync(name, tag, tagHash, versionInfo, zipHash));
-                else
-                {
-                    package.Hash = zipHash;
-                    await packageService.UpdatePackageAsync(package);
-                    return Ok(package);
-                }
+                return Ok(await packageService.AddPackageVersionAsync(name, tag, packageChanges, zipHash));
             }
             return BadRequest("Internal error in file service.");
         }
@@ -102,26 +93,9 @@ namespace SPM.Http.PackageService.Controllers
             if (string.IsNullOrEmpty(to))
                 return BadRequest();
 
-            List<PackageTag> tags = new List<PackageTag>();
+            List<PackageTag> tags = await packageService.GetPackageTagsAsync(packageName);
 
-            while (true)
-            {
-                IEnumerable<PackageTag> intermediateResult = await packageService.GetPackageTagsAsync(packageName, 3, tags.LastOrDefault()?.Timestamp);
-
-                if (!intermediateResult.Any())
-                    break;
-
-                if (!string.IsNullOrEmpty(from))
-                {
-                    tags.AddRange(intermediateResult.TakeWhile(t => t.Tag != from));
-                    if (intermediateResult.Any(t => t.Tag == from))
-                        break;
-                }
-                else
-                    tags.AddRange(intermediateResult);
-            }
-
-            return Json(tags.SkipWhile(t => t.Tag != to).Select(t => t.Tag));
+            return Json(tags.SkipWhile(t => t.Tag != to).TakeWhile(t => t.Tag != from).Select(t => t.Tag));
         }
 
         [HttpGet("download")]

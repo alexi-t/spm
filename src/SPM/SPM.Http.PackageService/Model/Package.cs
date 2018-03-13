@@ -8,12 +8,22 @@ namespace SPM.Http.PackageService.Model
 {
     public class Package
     {
-        public string Hash { get; internal set; }
+        public const string PACKAGES_PARTITION_NAME = "Packages";
+
         [PartitionKey]
-        public string Name { get; set; }
+        public string Partition { get; set; } = PACKAGES_PARTITION_NAME;
+
         [RowKey]
-        public string Tag { get; set; }
-        public string VersionInfo { get; internal set; }
-        public string TagHash { get; internal set; }
+        public string Name { get; set; }
+        
+        public string FileHash { get; set; }
+
+        public Package() { }
+
+        public Package(string name, string tag, string fileHash)
+        {
+            Name = $"{name}@{tag}";
+            FileHash = fileHash;
+        }
     }
 }

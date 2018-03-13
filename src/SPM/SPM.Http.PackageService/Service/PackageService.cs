@@ -9,6 +9,7 @@ using TechSmith.Hyde;
 using TechSmith.Hyde.Common;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json.Linq;
 
 namespace SPM.Http.PackageService.Service
 {
@@ -18,7 +19,7 @@ namespace SPM.Http.PackageService.Service
         private readonly ConnectionStringCloudStorageAccount storageAccount;
 
         private const string PackagesTableName = "packages";
-        private const string PackagesTagsTableName = "packageTags";
+        private const string PackagesFileChangesTableName = "packageFileChanges";
 
         public PackageService(string connectionString)
         {
@@ -37,7 +38,7 @@ namespace SPM.Http.PackageService.Service
             table = tableClient.GetTableReference(PackagesTableName);
             await table.CreateIfNotExistsAsync();
 
-            table = tableClient.GetTableReference(PackagesTagsTableName);
+            table = tableClient.GetTableReference(PackagesFileChangesTableName);
             await table.CreateIfNotExistsAsync();
         }
 
@@ -55,34 +56,91 @@ namespace SPM.Http.PackageService.Service
             }
         }
 
-        public async Task<List<PackageTag>> GetPackageTagsAsync(string packageName, int count = 0, string fromRowId = null)
+        public Task<List<PackageTag>> GetPackageTagsAsync(string packageName) =>
+            GetAllEntitiesFromPartitionAsync<PackageTag>(PackagesTableName, packageName);
+        
+
+        internal async Task<PackageTag> AddPackageVersionAsync(string name, string tag, string versionChanges, string fileHash)
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
-            IQueryAsync<PackageTag> filteredTags = tableStorage.CreateQuery<PackageTag>(PackagesTagsTableName).PartitionKeyEquals(packageName);
+            if (name == Package.PACKAGES_PARTITION_NAME)
+                throw new ArgumentException($"{name} is reserved");
 
-            if (!string.IsNullOrEmpty(fromRowId))
-                filteredTags = (filteredTags as IRowKeyFilterable<PackageTag>).RowKeyFrom(fromRowId).Exclusive();
-            if (count > 0)
-                filteredTags = (filteredTags as IQuery<PackageTag>).Top(count);
+            Package package = new Package(name, tag, fileHash);
+            tableStorage.Upsert(PackagesTableName, package); // save as Packages | name@tag
 
-            var tags = await filteredTags.Async();
+            List<PackageTag> allTags = await GetAllEntitiesFromPartitionAsync<PackageTag>(PackagesTableName, name);
 
-            return tags.ToList();
-        }
+            if (allTags.Any())
+            {
+                if (allTags.Any(t => t.Tag == tag) && allTags.First().Tag != tag) //tag already exist and it is not last
+                {
+                    throw new ArgumentException($"Tag {tag} already exist and it is not last");
+                }
+                else if (allTags.First().Tag == tag)
+                {
+                    IEnumerable<PackageChange> packageChanges = await GetAllEntitiesFromPartitionAsync<PackageChange>(PackagesFileChangesTableName, name);
 
-        internal async Task<Package> AddPackageAsync(string name, string tag, string tagHash, string versionInfo, string fileHash)
-        {
-            var tableStorage = new AzureTableStorageProvider(storageAccount);
+                    foreach (var prevChange in packageChanges.Where(c => c.Tag == tag))
+                    {
+                        tableStorage.Delete(PackagesFileChangesTableName, prevChange);
+                    }
+                }
+            }
 
-            var package = new Package { Name = name, Tag = tag, TagHash = tagHash, VersionInfo = versionInfo, Hash = fileHash };
-
-            tableStorage.Add(PackagesTableName, package);
-            tableStorage.Add(PackagesTagsTableName, new PackageTag(name, tag));
+            PackageTag packageVersion = new PackageTag(name, tag, fileHash);
+            tableStorage.Upsert(PackagesTableName, packageVersion); //save as name | timestamp (tag, hash)
+            
+            JObject versionInfoJO = JObject.Parse(versionChanges);
+            foreach (var fileEntry in versionInfoJO["files"])
+            {
+                string path = fileEntry["path"].Value<string>();
+                string hash = fileEntry["hash"].Value<string>();
+                string changeType = fileEntry["editType"].Value<string>();
+                tableStorage.Add(PackagesFileChangesTableName, new PackageChange(name, tag, path, hash, changeType));
+            }
 
             await tableStorage.SaveAsync();
 
-            return package;
+            return packageVersion;
+        }
+
+        private async Task<List<T>> GetAllEntitiesFromPartitionAsync<T>(string tableName, string partitionName) where T : Model.ITableEntity, new()
+        {
+            List<T> result = new List<T>();
+
+            var tableStorage = new AzureTableStorageProvider(storageAccount);
+
+            string lastRowKey = string.Empty;
+            while (true)
+            {
+                IEnumerable<T> entities = null;
+                if (string.IsNullOrEmpty(lastRowKey))
+                {
+                    entities = await tableStorage
+                        .CreateQuery<T>(tableName)
+                        .PartitionKeyEquals(partitionName)
+                        .Top(1000).Async();
+                }
+                else
+                {
+                    entities = await tableStorage
+                        .CreateQuery<T>(tableName)
+                        .PartitionKeyEquals(partitionName)
+                        .RowKeyFrom(lastRowKey).Exclusive()
+                        .Top(1000).Async();
+                }
+
+                result.AddRange(entities);
+
+                if (entities.Count() < 1000)
+                    break;
+                else
+                    lastRowKey = entities.Last().RowKey;
+            }
+
+            return result;
         }
 
         internal async Task UpdatePackageAsync(Package package)
@@ -91,5 +149,7 @@ namespace SPM.Http.PackageService.Service
             tableStorage.Update(PackagesTableName, package);
             await tableStorage.SaveAsync();
         }
+
+
     }
 }

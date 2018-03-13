@@ -50,7 +50,7 @@ namespace SPM.Http.PackageService
                 var cloudService = app.ApplicationServices.GetService<Service.PackageService>();
                 cloudService.Init();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;
