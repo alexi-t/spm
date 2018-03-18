@@ -6,7 +6,7 @@ using TechSmith.Hyde.Common.DataAnnotations;
 
 namespace SPM.Http.PackageService.Model
 {
-    public class PackageChange:ITableEntity
+    public class PackageChange : ITableEntity
     {
         [PartitionKey]
         public string Package { get; set; }

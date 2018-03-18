@@ -4,9 +4,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>exe</OutputType>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <PackageTargetFallback>portable-net45+win8</PackageTargetFallback>
     <ApplicationInsightsResourceId>/subscriptions/3f76ce41-6d1d-41f2-8b90-a27087c9f6e9/resourcegroups/SPM/providers/microsoft.insights/components/spmpackageservice</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/3f76ce41-6d1d-41f2-8b90-a27087c9f6e9/resourcegroups/SPM/providers/microsoft.insights/components/spmpackageservice</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>

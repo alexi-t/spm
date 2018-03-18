@@ -20,38 +20,19 @@ namespace SPM.Http.PackageService.Controllers
             this.fileService = fileService;
         }
 
-        [HttpGet("getAll")]
-        public async Task<IActionResult> GetAllTagsAsync([FromQuery]string name)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPackagesAsync()
         {
-            if (string.IsNullOrEmpty(name))
-                return BadRequest();
-
-            var tags = await packageService.GetPackageTagsAsync(name);
-
-            if (tags == null)
-                return NotFound();
-
-            return Ok(tags.Select(t => $"{name}@{t}"));
+            return Ok(await packageService.GetAllPackagesAsync());
         }
-
-        [HttpGet("get")]
+        
+        [HttpGet("{name}/info")]
         public async Task<IActionResult> GetAsync([FromQuery]string name)
         {
             if (string.IsNullOrEmpty(name))
                 return BadRequest();
-
-            var separatorIndex = name.IndexOf('@');
-            var packageName = name.Substring(0, separatorIndex);
-            if (string.IsNullOrEmpty(packageName))
-                return BadRequest();
-
-            string tag = string.Empty;
-            if (separatorIndex > -1)
-                tag = name.Substring(separatorIndex + 1);
-            else
-                tag = "lastest";
-
-            var package = await packageService.GetPackageByNameAndTagAsync(packageName, tag);
+            
+            var package = await packageService.GetPackageByNameAndTagAsync(name);
 
             if (package == null)
                 return NotFound();
@@ -90,32 +71,27 @@ namespace SPM.Http.PackageService.Controllers
         [HttpGet("{packageName}/tags")]
         public async Task<IActionResult> GetTagsAsync(string packageName, [FromQuery]string to, [FromQuery]string from)
         {
-            if (string.IsNullOrEmpty(to))
+            if (string.IsNullOrEmpty(packageName))
                 return BadRequest();
 
             List<PackageTag> tags = await packageService.GetPackageTagsAsync(packageName);
 
-            return Json(tags.SkipWhile(t => t.Tag != to).TakeWhile(t => t.Tag != from).Select(t => t.Tag));
+            if (!string.IsNullOrEmpty(to))
+                tags = tags.SkipWhile(t => t.Tag != to).ToList();
+
+            if (!string.IsNullOrEmpty(from))
+                tags = tags.TakeWhile(t => t.Tag != from).ToList();
+
+            return Json(tags.Select(t => t.Tag));
         }
 
-        [HttpGet("download")]
+        [HttpGet("{name}/download")]
         public async Task<IActionResult> GetDownloadLink(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return BadRequest();
-
-            var separatorIndex = name.IndexOf('@');
-            var packageName = name.Substring(0, separatorIndex);
-            if (string.IsNullOrEmpty(packageName))
-                return BadRequest();
-
-            string tag = string.Empty;
-            if (separatorIndex > -1)
-                tag = name.Substring(separatorIndex + 1);
-            else
-                tag = "lastest";
-
-            var package = await packageService.GetPackageByNameAndTagAsync(packageName, tag);
+            
+            var package = await packageService.GetPackageByNameAndTagAsync(name);
 
             if (package == null)
                 return NotFound();

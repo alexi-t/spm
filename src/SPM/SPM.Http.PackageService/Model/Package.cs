@@ -6,7 +6,7 @@ using TechSmith.Hyde.Common.DataAnnotations;
 
 namespace SPM.Http.PackageService.Model
 {
-    public class Package
+    public class Package:ITableEntity
     {
         public const string PACKAGES_PARTITION_NAME = "Packages";
 
@@ -17,6 +17,10 @@ namespace SPM.Http.PackageService.Model
         public string Name { get; set; }
         
         public string FileHash { get; set; }
+
+        public string PartitionKey => PACKAGES_PARTITION_NAME;
+
+        public string RowKey => Name;
 
         public Package() { }
 

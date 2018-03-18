@@ -42,13 +42,19 @@ namespace SPM.Http.PackageService.Service
             await table.CreateIfNotExistsAsync();
         }
 
-        public async Task<Package> GetPackageByNameAndTagAsync(string name, string tag)
+        public async Task<string[]> GetAllPackagesAsync()
+        {
+            var allPackages = await GetAllEntitiesFromPartitionAsync<Package>(PackagesTableName, Package.PACKAGES_PARTITION_NAME);
+            return allPackages.Select(p => p.Name).ToArray();
+        }
+
+        public async Task<Package> GetPackageByNameAndTagAsync(string name)
         {
             var tableStorage = new AzureTableStorageProvider(storageAccount);
 
             try
             {
-                return await tableStorage.GetAsync<Package>(PackagesTableName, name, tag);
+                return await tableStorage.GetAsync<Package>(PackagesTableName, Package.PACKAGES_PARTITION_NAME, name);
             }
             catch (EntityDoesNotExistException)
             {
@@ -58,7 +64,7 @@ namespace SPM.Http.PackageService.Service
 
         public Task<List<PackageTag>> GetPackageTagsAsync(string packageName) =>
             GetAllEntitiesFromPartitionAsync<PackageTag>(PackagesTableName, packageName);
-        
+
 
         internal async Task<PackageTag> AddPackageVersionAsync(string name, string tag, string versionChanges, string fileHash)
         {
@@ -86,12 +92,13 @@ namespace SPM.Http.PackageService.Service
                     {
                         tableStorage.Delete(PackagesFileChangesTableName, prevChange);
                     }
+                    tableStorage.Delete(PackagesTableName, allTags.First());
                 }
             }
 
             PackageTag packageVersion = new PackageTag(name, tag, fileHash);
             tableStorage.Upsert(PackagesTableName, packageVersion); //save as name | timestamp (tag, hash)
-            
+
             JObject versionInfoJO = JObject.Parse(versionChanges);
             foreach (var fileEntry in versionInfoJO["files"])
             {
@@ -142,14 +149,5 @@ namespace SPM.Http.PackageService.Service
 
             return result;
         }
-
-        internal async Task UpdatePackageAsync(Package package)
-        {
-            var tableStorage = new AzureTableStorageProvider(storageAccount);
-            tableStorage.Update(PackagesTableName, package);
-            await tableStorage.SaveAsync();
-        }
-
-
     }
 }
