@@ -11,5 +11,6 @@ namespace SPM.Shell.Services
     {
         Task<FolderVersionEntry> CreateInitialVersion(IEnumerable<string> filesList);
         FolderVersionEntry CreateDiff(IEnumerable<string> currentFilesList);
+        FolderVersionEntry CreateDiff(Dictionary<string, string> tagPathToHashMap, Dictionary<string, string> actualPathToHashMap);
     }
 }

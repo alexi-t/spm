@@ -113,6 +113,8 @@ namespace SPM.Http.PackageService.Service
             return packageVersion;
         }
 
+        internal Task<List<PackageChange>> GetPackageFileHistory(string name) => GetAllEntitiesFromPartitionAsync<PackageChange>(PackagesFileChangesTableName, name);
+
         private async Task<List<T>> GetAllEntitiesFromPartitionAsync<T>(string tableName, string partitionName) where T : Model.ITableEntity, new()
         {
             List<T> result = new List<T>();

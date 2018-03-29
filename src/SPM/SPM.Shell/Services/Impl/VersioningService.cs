@@ -140,5 +140,31 @@ namespace SPM.Shell.Services
 
             return currentVersion;
         }
+
+        public FolderVersionEntry CreateDiff(Dictionary<string, string> tagPathToHashMap, Dictionary<string, string> actualPathToHashMap)
+        {
+            FolderVersionEntry folderVersion = new FolderVersionEntry();
+
+            List<string> addedPaths = actualPathToHashMap.Keys.Except(tagPathToHashMap.Keys).ToList();
+            List<string> removedPaths = tagPathToHashMap.Keys.Except(actualPathToHashMap.Keys).ToList();
+            List<string> changedPaths = actualPathToHashMap.Keys.Except(addedPaths).ToList();
+
+            foreach (string path in removedPaths)
+            {
+                folderVersion.AddEntry(path, string.Empty, FileHistoryType.Deleted);
+            }
+
+            foreach (var path in addedPaths)
+            {
+                folderVersion.AddEntry(path, actualPathToHashMap[path], FileHistoryType.Added);
+            }
+
+            foreach (var path in changedPaths)
+            {
+                folderVersion.AddEntry(path, actualPathToHashMap[path], FileHistoryType.Modified);
+            }
+
+            return folderVersion;
+        }
     }
 }

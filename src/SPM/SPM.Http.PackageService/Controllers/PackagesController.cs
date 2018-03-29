@@ -20,7 +20,7 @@ namespace SPM.Http.PackageService.Controllers
             this.fileService = fileService;
         }
 
-        [HttpGet("all")]
+        [HttpGet("all", Order = 0)]
         public async Task<IActionResult> GetAllPackagesAsync()
         {
             return Ok(await packageService.GetAllPackagesAsync());
@@ -99,6 +99,17 @@ namespace SPM.Http.PackageService.Controllers
             var packageInfo = new PackageInfo(package, fileService.GetDowloadLinkFormat());
 
             return Redirect(packageInfo.DownloadLink);
+        }
+
+        [HttpGet("{name}/files")]
+        public async Task<IActionResult> GetFileHistory(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return BadRequest();
+
+            var history = await packageService.GetPackageFileHistory(name);
+            
+            return Json(history);
         }
     }
 }

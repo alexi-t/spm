@@ -9,8 +9,9 @@ namespace SPM.Shell.Services
     {
         Task<PackageInfo> GetPackageVersionAsync(string name);
         HttpOperationWithProgress DownloadPackage(string name, string tag);
-        Task PushPackageAsync(string packageNameAndTag, string tagHash, FolderVersionEntry folderVersion);
+        Task PushPackageAsync(string packageNameAndTag, FolderVersionEntry folderVersion);
         Task<string[]> GetPackageTagsAsync(string packageNameTo, string packageNameFrom = null);
-        Task<string[]> GetAllPackageTagsAsync(string packageName, int count);
+        Task<string[]> GetAllPackageTagsAsync(string packageName);
+        Task<Dictionary<string, string>> GetPackageFilesAtVersionAsync(string name, string tag);
     }
 }

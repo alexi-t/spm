@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SPM.Shell.Services.Model;
 using SPM.Shell.Util;
 using System;
@@ -29,14 +30,13 @@ namespace SPM.Shell.Services
             };
         }
 
-        public async Task PushPackageAsync(string name, string tagHash, FolderVersionEntry folderVersion)
+        public async Task PushPackageAsync(string name, FolderVersionEntry folderVersion)
         {
             byte[] fileData = await fileService.ZipFiles(folderVersion.Files.Where(f => f.EditType != FileHistoryType.Deleted).Select(f => f.Path));
 
             var content = new MultipartFormDataContent
             {
                 { new StringContent(name), "nameAndTag" },
-                { new StringContent("tagHash"), tagHash },
                 { new StringContent(JsonConvert.SerializeObject(folderVersion)), "versionInfo"  },
                 { new ByteArrayContent(fileData), "versionFile", "data.zip" }
             };
@@ -138,6 +138,81 @@ namespace SPM.Shell.Services
                 return Newtonsoft.Json.Linq.JArray.Parse(arrayJSON).Select(t => t.ToObject<string>()).ToArray();
             }
             return new string[0];
+        }        
+
+        public async Task<string[]> GetAllPackageTagsAsync(string packageName)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"packages/{packageName}/tags", UriKind.Relative),
+                Method = HttpMethod.Get
+            };
+
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string arrayJSON = await response.Content.ReadAsStringAsync();
+
+                return Newtonsoft.Json.Linq.JArray.Parse(arrayJSON).Select(t => t.ToObject<string>()).ToArray();
+            }
+            return new string[0];
+        }
+
+        public async Task<Dictionary<string, string>> GetPackageFilesAtVersionAsync(string name, string tag)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"packages/{name}/files", UriKind.Relative),
+                Method = HttpMethod.Get
+            };
+
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+
+            var changes = new Dictionary<string, string>();
+
+            if (response.IsSuccessStatusCode)
+            {
+                string arrayJSON = await response.Content.ReadAsStringAsync();
+                JArray jArray = JArray.Parse(arrayJSON);
+
+                string prevChangeTag = string.Empty;
+                bool stopAtTagChange = false;
+
+                foreach (var changeEl in jArray.Reverse())
+                {
+                    string changeTag = changeEl["tag"].ToObject<string>();
+                    string path = changeEl["filePath"].ToObject<string>();
+                    string hash = changeEl["hash"].ToObject<string>();
+                    string changeType = changeEl["changeType"].ToObject<string>();
+
+                    if (changeTag != prevChangeTag && stopAtTagChange)
+                        break;
+
+                    switch (changeType)
+                    {
+                        case "Added":
+                        case "Modified":
+                            if (changes.ContainsKey(path))
+                                changes[path] = hash;
+                            else
+                                changes.Add(path, hash);
+                            break;
+                        case "Deleted":
+                            if (changes.ContainsKey(path))
+                                changes.Remove(path);
+                            break;
+                        default:
+                            break;
+                    }
+                    prevChangeTag = changeTag;
+
+                    if (changeTag == tag)
+                        stopAtTagChange = true;
+                }
+                
+            }
+            return new Dictionary<string, string>();
         }
     }
 }

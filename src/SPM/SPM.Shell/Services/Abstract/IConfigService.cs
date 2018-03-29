@@ -5,10 +5,10 @@ namespace SPM.Shell.Services
 {
     public interface IConfigService
     {
-        PackageConfiguration GetConfig();
+        bool TryGetConfig(out PackageConfiguration packageConfiguration);
         
         void CreateConfig(string name, string versionHash);
 
-        void SetTag(string tag, string hash);
+        void SetTag(string tag);
     }
 }

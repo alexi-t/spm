@@ -15,7 +15,5 @@ namespace SPM.Shell.Config
         public string Tag { get; set; }
         [JsonProperty("excludes")]
         public string[] ExcludePaths { get; set; }
-        [JsonProperty("dataHash")]
-        public string Hash { get; set; }
     }
 }

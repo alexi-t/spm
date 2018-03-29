@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SPM.Shell.Commands.Tag
@@ -29,11 +30,11 @@ namespace SPM.Shell.Commands.Tag
         private readonly IOnlineStoreService onlineStoreService;
 
         public TagCommand(
-            IConfigService configService, 
-            IFileService fileService, 
-            IHashService hashService, 
-            IUIService uiService, 
-            IVersioningService versioningService, 
+            IConfigService configService,
+            IFileService fileService,
+            IHashService hashService,
+            IUIService uiService,
+            IVersioningService versioningService,
             IOnlineStoreService onlineStoreService)
             : base("tag", inputs: new[] { tagNameInput })
         {
@@ -51,10 +52,26 @@ namespace SPM.Shell.Commands.Tag
 
             if (string.IsNullOrEmpty(tag))
             {
-                tag = DateTime.Now.ToString("yyyyMMdd");
+                string newTag = DateTime.Now.ToString("yyyyMMdd");
 
-                string[] tags = await onlineStoreService.GetAllPackageTagsAsync(configuration.Name, 1);
-                string lastTag = tags.FirstOrDefault();
+                string[] existingTags = await onlineStoreService.GetAllPackageTagsAsync(configuration.Name);
+                string lastTag = existingTags.FirstOrDefault();
+
+                if (string.IsNullOrEmpty(lastTag))
+                    tag = newTag;
+
+                if (lastTag == newTag)
+                    newTag = lastTag + ".1";
+                else if (lastTag.StartsWith(newTag))
+                {
+                    string[] split = newTag.Split('.');
+                    if (int.TryParse(split.Last(), out int counter))
+                    {
+                        newTag = newTag + "." + (++counter);
+                    }
+                    else
+                        throw new ArgumentException($"Can not create auto tag. Last tag is {lastTag}");
+                }
             }
 
             return tag;
@@ -62,32 +79,57 @@ namespace SPM.Shell.Commands.Tag
 
         protected async override Task RunCommandAsync()
         {
-            PackageConfiguration config = configService.GetConfig();
+            PackageConfiguration config = null;
+            if (!configService.TryGetConfig(out config))
+            {
+                uiService.AddMessage("No config inited, can not compute diff");
+                return;
+            }
 
-            List<string> currentFilesList = fileService.GetWorkingDirectoryFiles(config.ExcludePaths);
+            string newTag = await GetTagName(config);
 
-            string currentHash = hashService.ComputeFilesHash(currentFilesList);
+            Dictionary<string, string> actualPathToHashMap = new Dictionary<string, string>();
 
-            if (currentHash == config.Hash)
+            foreach (var filePath in fileService.GetWorkingDirectoryFiles(config.ExcludePaths))
+            {
+                actualPathToHashMap.Add(filePath, hashService.ComputeFileHash(filePath));
+            }
+
+            Dictionary<string, string> tagPathToHashMap =
+                await onlineStoreService.GetPackageFilesAtVersionAsync(config.Name, config.Tag);
+
+            bool hasChanges =
+                tagPathToHashMap.Keys.Except(actualPathToHashMap.Keys).Any() ||
+                actualPathToHashMap.Keys.Except(tagPathToHashMap.Keys).Any();
+
+            if (!hasChanges)
+                foreach (var pathToHashMap in tagPathToHashMap)
+                {
+                    if (actualPathToHashMap[pathToHashMap.Key] != pathToHashMap.Value)
+                    {
+                        hasChanges = true;
+                        break;
+                    }
+                }
+
+            if (!hasChanges)
             {
                 uiService.AddMessage("No difference with previous version. Can not add tag");
                 return;
             }
 
-            string tag =  await GetTagName(config);
+            FolderVersionEntry folderVersion = versioningService.CreateDiff(tagPathToHashMap, actualPathToHashMap);
 
-            FolderVersionEntry folderVersion = versioningService.CreateDiff(currentFilesList);
-
-            uiService.AddMessage($"Created {config.Name}@{tag}");
+            uiService.AddMessage($"Created {config.Name}@{newTag}");
             uiService.AddMessage("List of changes:");
             foreach (FileHistoryEntry fileHistoryEntry in folderVersion.Files)
             {
                 uiService.AddMessage($"\t[{fileHistoryEntry.EditType.ToString().ToLower()}]\t{Path.GetFileName(fileHistoryEntry.Path)}");
             }
 
-            configService.SetTag(tag, currentHash);
+            configService.SetTag(newTag);
 
-            await onlineStoreService.PushPackageAsync($"{config.Name}@{tag}", currentHash, folderVersion);
+            await onlineStoreService.PushPackageAsync($"{config.Name}@{newTag}", folderVersion);
         }
     }
 }
