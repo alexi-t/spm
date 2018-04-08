@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{C6681E8D-1E78-4ACD-BE4E-9805B51197E9}"
 EndProject
@@ -15,9 +15,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SPM.Shell", "SPM.Shell\SPM.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SPM.Http.PackageService", "SPM.Http.PackageService\SPM.Http.PackageService.csproj", "{2C8E91BF-12E0-4F59-80C3-6A2DE25B6FC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SPM.Http.FileService", "SPM.Http.FileService\SPM.Http.FileService.csproj", "{A93EE7AC-0D04-4B8E-9926-E7CA1F22DEBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SPM.Http.FileService", "SPM.Http.FileService\SPM.Http.FileService.csproj", "{A93EE7AC-0D04-4B8E-9926-E7CA1F22DEBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SPM.Http.SelfUpdateHost", "SPM.Http.SelfUpdateHost\SPM.Http.SelfUpdateHost.csproj", "{75793176-5996-42DA-900F-88DBE4C267CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SPM.Http.SelfUpdateHost", "SPM.Http.SelfUpdateHost\SPM.Http.SelfUpdateHost.csproj", "{75793176-5996-42DA-900F-88DBE4C267CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,5 +100,8 @@ Global
 		{2C8E91BF-12E0-4F59-80C3-6A2DE25B6FC8} = {BE3F2C88-B930-4B29-872D-EF86CA46DED6}
 		{A93EE7AC-0D04-4B8E-9926-E7CA1F22DEBF} = {BE3F2C88-B930-4B29-872D-EF86CA46DED6}
 		{75793176-5996-42DA-900F-88DBE4C267CA} = {BE3F2C88-B930-4B29-872D-EF86CA46DED6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3394C7E-D8DD-4D9F-9F37-C2157908F218}
 	EndGlobalSection
 EndGlobal

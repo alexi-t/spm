@@ -37,7 +37,7 @@ namespace SPM.Shell.Services
             var content = new MultipartFormDataContent
             {
                 { new StringContent(name), "nameAndTag" },
-                { new StringContent(JsonConvert.SerializeObject(folderVersion)), "versionInfo"  },
+                { new StringContent(JsonConvert.SerializeObject(folderVersion)), "packageChanges"  },
                 { new ByteArrayContent(fileData), "versionFile", "data.zip" }
             };
 
@@ -60,7 +60,7 @@ namespace SPM.Shell.Services
 
             if (response.IsSuccessStatusCode)
             {
-
+                uiService.AddMessage("/r/nUpload done");
             }
             else
                 throw new InvalidOperationException(responseContent);
@@ -71,7 +71,7 @@ namespace SPM.Shell.Services
         {
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"packages/get?name={name}", UriKind.Relative),
+                RequestUri = new Uri($"packages/{name}/info", UriKind.Relative),
                 Method = HttpMethod.Get
             };
 
@@ -184,21 +184,21 @@ namespace SPM.Shell.Services
                     string changeTag = changeEl["tag"].ToObject<string>();
                     string path = changeEl["filePath"].ToObject<string>();
                     string hash = changeEl["hash"].ToObject<string>();
-                    string changeType = changeEl["changeType"].ToObject<string>();
+                    FileHistoryType changeType = changeEl["changeType"].ToObject<FileHistoryType>();
 
                     if (changeTag != prevChangeTag && stopAtTagChange)
                         break;
 
                     switch (changeType)
                     {
-                        case "Added":
-                        case "Modified":
+                        case FileHistoryType.Added:
+                        case FileHistoryType.Modified:
                             if (changes.ContainsKey(path))
                                 changes[path] = hash;
                             else
                                 changes.Add(path, hash);
                             break;
-                        case "Deleted":
+                        case FileHistoryType.Deleted:
                             if (changes.ContainsKey(path))
                                 changes.Remove(path);
                             break;
@@ -210,7 +210,7 @@ namespace SPM.Shell.Services
                     if (changeTag == tag)
                         stopAtTagChange = true;
                 }
-                
+                return changes;
             }
             return new Dictionary<string, string>();
         }

@@ -161,7 +161,8 @@ namespace SPM.Shell.Services
 
             foreach (var path in changedPaths)
             {
-                folderVersion.AddEntry(path, actualPathToHashMap[path], FileHistoryType.Modified);
+                if (actualPathToHashMap[path] != tagPathToHashMap[path])
+                    folderVersion.AddEntry(path, actualPathToHashMap[path], FileHistoryType.Modified);
             }
 
             return folderVersion;

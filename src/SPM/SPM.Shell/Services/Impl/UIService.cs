@@ -15,6 +15,7 @@ namespace SPM.Shell.Services
         {
             this.defaultBackColor = Console.BackgroundColor;
             this.defaultForeColor = Console.ForegroundColor;
+
         }
 
         public void AddMessage(string message, bool appendNewline = true, ConsoleColor? color = null)

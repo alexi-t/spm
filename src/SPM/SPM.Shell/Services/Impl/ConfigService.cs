@@ -25,8 +25,7 @@ namespace SPM.Shell.Services
         {
             var root = new PackageConfiguration
             {
-                Name = name,
-                Hash = hash
+                Name = name
             };
 
             WriteConfig(root);
@@ -48,20 +47,33 @@ namespace SPM.Shell.Services
 
         private PackageConfiguration ReadConfig() => JsonConvert.DeserializeObject<PackageConfiguration>(fileService.ReadFile(CONFIG_FILE_NAME));
         
-        public void SetTag(string tag, string hash)
-        {
-            PackageConfiguration root = ReadConfig();
-
-            root.Tag = tag;
-            root.Hash = hash;
-
-            WriteConfig(root);
-        }
-
         public List<string> GetCurrentFilesList()
         {
             PackageConfiguration config = ReadConfig();
             return Directory.GetFiles(Environment.CurrentDirectory).Except(config.ExcludePaths).Where(f => Path.GetFileName(f) != CONFIG_FILE_NAME).ToList();
+        }
+
+        public bool TryGetConfig(out PackageConfiguration packageConfiguration)
+        {
+            packageConfiguration = null;
+            try
+            {
+                packageConfiguration = ReadConfig();
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        public void SetTag(string tag)
+        {
+            PackageConfiguration root = ReadConfig();
+
+            root.Tag = tag;
+
+            WriteConfig(root);
         }
     }
 }

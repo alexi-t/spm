@@ -49,14 +49,14 @@ namespace SPM.Shell.Commands.Pull
             string packageNameAndTag = GetCommandInputValue(packageNameInput);
 
             string packageName = packageNameAndTag.Split('@').FirstOrDefault();
+            string packageTagName = packageNameAndTag.Contains("@") ? packageNameAndTag.Split('@').LastOrDefault() : string.Empty;
 
             string[] packageTagHistory = null;
 
             bool createConfig = false;
 
-            try
+            if (configService.TryGetConfig(out Config.PackageConfiguration config))
             {
-                Config.PackageConfiguration config = configService.GetConfig();
 
                 if (packageName != config.Name)
                     throw new InvalidOperationException($"Folder binded to another package {config.Name}");
@@ -64,10 +64,14 @@ namespace SPM.Shell.Commands.Pull
                 string currentPackageName = $"{config.Name}@{config.Tag}";
                 packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag, currentPackageName);
             }
-            catch (ConfigFileNotFoundException)
+            else
             {
                 createConfig = true;
-                packageTagHistory = await onlineStoreService.GetPackageTagsAsync(packageNameAndTag);
+                packageTagHistory = await onlineStoreService.GetAllPackageTagsAsync(packageName);
+                if (!string.IsNullOrEmpty(packageTagName))
+                    packageTagHistory = packageTagHistory.SkipWhile(t => t != packageTagName).ToArray();
+                else
+                    uiService.AddMessage($"Pulling {packageName}@{packageTagHistory.FirstOrDefault()}");
             }
 
             foreach (string packageTag in packageTagHistory.Reverse())
@@ -98,7 +102,7 @@ namespace SPM.Shell.Commands.Pull
                     createConfig = false;
                 }
                 else
-                    configService.SetTag(packageTag, packageInfo.Hash);
+                    configService.SetTag(packageTag);
             }
         }
     }

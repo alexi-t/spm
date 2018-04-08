@@ -72,6 +72,12 @@ namespace SPM.Shell.Commands.Tag
                     else
                         throw new ArgumentException($"Can not create auto tag. Last tag is {lastTag}");
                 }
+                else if (!existingTags.Contains(newTag))
+                {
+                    tag = newTag;
+                }
+                else
+                    throw new ArgumentException("Can not auto tag");
             }
 
             return tag;
@@ -120,11 +126,28 @@ namespace SPM.Shell.Commands.Tag
 
             FolderVersionEntry folderVersion = versioningService.CreateDiff(tagPathToHashMap, actualPathToHashMap);
 
+            ConsoleColor? statusToColor(FileHistoryType status)
+            {
+                switch (status)
+                {
+                    case FileHistoryType.Added:
+                        return ConsoleColor.Green;
+                    case FileHistoryType.Modified:
+                        return ConsoleColor.Yellow;
+                    case FileHistoryType.Deleted:
+                        return ConsoleColor.Red;
+                    default:
+                        return null;
+                }
+            }
+
             uiService.AddMessage($"Created {config.Name}@{newTag}");
             uiService.AddMessage("List of changes:");
             foreach (FileHistoryEntry fileHistoryEntry in folderVersion.Files)
             {
-                uiService.AddMessage($"\t[{fileHistoryEntry.EditType.ToString().ToLower()}]\t{Path.GetFileName(fileHistoryEntry.Path)}");
+                uiService.AddMessage(
+                    message: $"\t[{fileHistoryEntry.EditType.ToString().ToLower()}]\t{Path.GetFileName(fileHistoryEntry.Path)}",
+                    color: statusToColor(fileHistoryEntry.EditType));
             }
 
             configService.SetTag(newTag);

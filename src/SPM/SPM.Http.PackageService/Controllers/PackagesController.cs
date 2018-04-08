@@ -27,7 +27,7 @@ namespace SPM.Http.PackageService.Controllers
         }
         
         [HttpGet("{name}/info")]
-        public async Task<IActionResult> GetAsync([FromQuery]string name)
+        public async Task<IActionResult> GetAsync(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return BadRequest();

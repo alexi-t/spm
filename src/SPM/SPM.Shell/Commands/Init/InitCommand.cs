@@ -57,7 +57,7 @@ namespace SPM.Shell.Commands.Init
 
             configService.CreateConfig(packageName, packageHash);
 
-            await onlineStoreService.PushPackageAsync($"{packageName}@initial", packageHash, version);
+            await onlineStoreService.PushPackageAsync($"{packageName}@initial", version);
         }
     }
 }
